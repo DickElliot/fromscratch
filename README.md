@@ -9,7 +9,7 @@ Website uses a mixture of angular (inc. html/css/typescript) for the frontend wi
 # Premise: 
 I originally started this application to increase my skills in Js (JavaScript), having little-to-no experience with it beforehand. After some research about creatin modern dynamic webapps I chose the framework Angular due to it’s popularity with businesses, which also meant switching my main language to Typescript; a superset of Js I’d hadn’t heard of at that point. 
 # Goal:
-With this task completed I would hope to increase New Zealander’s chances at planning& preparing delicious food for themselves & loves one with the barest of preparation.
+With this task completed I would hope to increase New Zealander’s chances at planning& preparing delicious food for themselves & those they love, all with the barest of preparation.
 # Method:
 Using python, along with the Scrapy library I scrape data off supermarket websites to get their local product prices, which are then uploaded to a MySQL database. With PHP these products go through data pre-processing & are imported into an Angular app which they are then matched to different recipes to give a user a fully-priced recipe at their local supermarket. 
 # Languages Used:
