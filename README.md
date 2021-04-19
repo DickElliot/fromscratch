@@ -14,14 +14,19 @@ With this task completed I would hope to increase New Zealander’s chances at p
 Using python, along with the Scrapy library I scrape data off supermarket websites to get their local product prices, which are then uploaded to a MySQL database. With PHP these products go through data pre-processing & are imported into an Angular app which they are then matched to different recipes to give a user a fully-priced recipe at their local supermarket. 
 # Languages Used:
 Along with front-end development I wanted to learn simple database management & webscraping. The languages I used to achieve this are listed below.
+
 Typescript:
 A superset of Js that uses stronger-typing & encourages OOP practices, this is the de facto language with Angular.
+
 PHP: 
 An unusual choice combined when combined with Angular, I hadn’t used it before. It is an almost universally-accepted language that has been used with frequency for decades.
+
 Python: 
 Used to scrape data with selenium/scrapy, also some MySQL interfacing. 
+
 MYSQL:
 Having never used a database before I was quite keen to learn what I could of MySQL & relational databasing. 
+
 MongoDB:
 NoSQL interested me and it seems the most popular choice to intertwine with angular, I’m using it store caches of the websites recipes as they have been matched to supermarkets. First the combinations are created in the website, they are then stored for retrieval. 
 
