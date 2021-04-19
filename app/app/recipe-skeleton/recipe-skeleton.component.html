@@ -1,0 +1,41 @@
+<div class="skeleton-container">
+  <div class="details">
+    <app-recipe-price class="price" [recipe]="recipe"></app-recipe-price>
+    <div class="picture">
+      <img src="{{getRecipeImageUrl()}}" height="175" alt="Picture of {{recipe.title}}">
+    </div>
+    <div class="details-column">
+      <span id="servingSizeSpan">
+        <form [formGroup]="recipeDetailsFormGroup">
+          <label class="servingSize" for="servingSize">Servings:
+            <input formControlName="servingsize" type="number" min="1" id="servingSize"
+              placeholder="{{recipe.servingSize}}">
+          </label>
+        </form>
+      </span>
+      <span>Prep-time: {{recipe.prepTime}}</span>
+      <span>Cook-time: {{recipe.cookTime}}</span>
+      <span>Total-time:{{recipe.totalCookTime | time:'recipe'}}</span>
+    </div>
+  </div>
+  <div class="ingredients">
+    <app-recipe-ingredients [recipe]="recipe"></app-recipe-ingredients>
+  </div>
+  <div class="timers">
+    <app-timer [recipe]="recipe"></app-timer>
+  </div>
+  <div class="method">
+    <h3 id="method-title">Method</h3>
+    <ol *ngIf="recipe">
+      <li *ngFor="let step of recipe.method" id="{{step}}" (click)="toggleSelected(step)">
+        <p class="sentence" *ngFor="let sentence of getSentences(step)">{{sentence}}</p>
+      </li>
+      <li>Finished!</li>
+    </ol>
+  </div>
+  <div id="products">
+    <app-recipe-products *ngIf="recipe.ingredients" [recipe]="recipe"></app-recipe-products>
+  </div>
+  <a (click)="goTo('')" class="return-button">Return to Recipes</a>
+
+</div>

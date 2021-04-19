@@ -1,0 +1,99 @@
+#products-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #ff605b;
+  border-radius:10px;
+  font-size: 1em;
+}
+h3 {
+  /* font-size: 1em; */
+  white-space: nowrap;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+h3:hover {
+  cursor: pointer;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding:0;
+  font-size: inherit;
+  background-color: white;
+}
+
+li {
+  border-top: 2px rgb(153, 4, 4) solid;
+  padding: 6px 0;
+  margin:0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ingredientList-ingredient {
+  color: rgb(46, 46, 46);
+  font-size: 0.7em;
+}
+
+.selected {
+  background-color: orange;
+}
+
+li:hover {
+  background-color: whitesmoke;
+}
+
+option, select {
+  background-color: rgba(0,0,0,0);
+  font-size: 0.9em;
+  
+}
+
+.button {
+    border: 1px solid white;
+    color:white;
+    font-size: 0.8em;
+    display: flex;
+    align-self: center;
+    width: 80%;
+    margin-top: 1vw;
+    padding: 2px;
+    margin-bottom: 1vw;
+    text-align: center;
+    justify-content: center;
+}
+
+.button:hover {
+    cursor: pointer;
+    background-color: white;
+    color: #ff605b;
+}
+
+.min {
+    max-width: 2vw;
+    color: #00000000;
+}
+
+.productText {
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
+}
+
+.productTextPurchaseAmount {
+  grid-column: 1;
+}
+.productTextTitle {
+  grid-column: 2;
+  overflow-y: hidden;
+  overflow-x: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling: touch;
+}
+.productTextTitle::-webkit-scrollbar {
+  display: none;
+}
+.productTextPrice {
+  grid-column: 3;
+}

@@ -1,0 +1,12 @@
+<div id="ingredients-container">
+  <h3 id="ingredients-title">Ingredients</h3>
+  <ul *ngIf="recipe">
+    <li *ngFor="let ingredient of recipe.ingredients">
+      <div class="ingredientDiv"><span class="ingredientQuantity">{{ingredient.quantity | number: '1.0-1'}}</span><span
+          class="ingredientUnit" [ngClass]="{hidden: isItem(ingredient.unit)}"> {{ingredient.unit}} </span><span
+          class="ingredientText"> {{ingredient.parsedText}}</span>
+      </div>
+      <!-- <span class="ingredientOriginalText">{{ingredient.originalText}}</span> -->
+    </li>
+  </ul>
+</div>

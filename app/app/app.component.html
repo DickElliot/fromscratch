@@ -1,0 +1,33 @@
+<body>
+  <header (mouseenter)="showLocation()" (mouseleave)="showTitle()">
+    <div id="version-text"><a href="https://github.com/dickelliot/fromscratch">beta</a></div>
+    <h1 (click)="toggleOpen('nav')">
+      {{headerText | async}}
+    </h1>
+    <app-hamburger-button (click)="toggleOpen('nav')" [color]="'lightcoral'" id="burger-button"></app-hamburger-button>
+
+  </header>
+  <div id="side-nav-bar" [ngClass]=" navBarOpen ? 'open' : 'closed'">
+    <a (click)="goTo('')">Recipes</a>
+    <a (click)="toggleOpen('list')">Shopping List</a>
+    <a (click)="goTo('store-choice')">Store Choice</a>
+  </div>
+
+  <div id="shopping-list-bar" [ngClass]="{ 'open': shoppingListOpen, 'closed': !shoppingListOpen }">
+    <a href="javascript:void(0)" class="close-button" (click)="toggleOpen('list')">&times;</a>
+    <ul class="shopping-list" *ngFor="let section of supermarketSections">
+      {{ prettifySection(section) }}
+      <div *ngFor="let ingredient of shoppingList | async; let i = index">
+        <li id="{{i}}" class="shopping-list-item" *ngIf="ingredient.currentProduct.supermarketSection == section">
+          <span *ngIf="ingredient" (click)="toggleSelected(i)">
+            {{ingredient.currentProduct.purchaseAmount}} | {{ingredient.currentProduct.title}}
+            <!-- <span class="supermarketSectionText">{{ingredient.currentProduct.supermarketSection}} </span> -->
+          </span>
+        </li>
+      </div>
+    </ul>
+    <span *ngIf="shoppingListPrice">{{shoppingListPrice | async | currency}}</span>
+  </div>
+
+</body>
+<router-outlet></router-outlet>

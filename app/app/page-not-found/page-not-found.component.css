@@ -1,0 +1,10 @@
+div {
+    background-color: white;
+    border:2px solid black;
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items:center;
+}

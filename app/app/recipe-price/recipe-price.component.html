@@ -1,0 +1,3 @@
+<div (click)="toggleWidth()" [ngClass]="{ min :isShown}" [@newPrice]="recipePrice" id="price">
+    <span [ngClass]="{hidden: isShown}">{{recipePrice | currency}}</span>
+</div>

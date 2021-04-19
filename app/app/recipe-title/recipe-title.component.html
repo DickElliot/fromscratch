@@ -1,0 +1,16 @@
+<div class="container" (click)="chooseRecipe()" (mouseenter)="toggleDetails()" (mouseleave)="toggleDetails()">
+    <h3 [style.font-size.em]="generateFontSize(recipe.title)"
+        [ngClass]="{ 'show-title': !showDetails, 'hide-title': showDetails }">{{recipe.title}}</h3>
+    <div class="recipe-details-container" *ngIf="showDetails">
+        <span class="recipe-time"
+            [ngStyle]="{ 'background-image': getClockImageUrl() }">{{recipe.totalCookTime}}m</span>
+        <span class="recipe-price">${{recipe.price.toString().split('.')[0]}}<span
+                class="change">.{{recipe.price.toString().split('.')[1][0]}}</span></span>
+        <span class="recipe-servingsize"
+            [ngStyle]="{ 'background-image': getServingsizeImageUrl() }">{{recipe.servingSize}}</span>
+    </div>
+    <div class="recipe-diet" *ngIf="showDetails">
+        <span class="diet-image" *ngFor="let diet of diets"
+            [ngStyle]="{ 'background-image': getDietImageUrl(diet) }"></span>
+    </div>
+</div>

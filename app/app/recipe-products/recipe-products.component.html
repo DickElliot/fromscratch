@@ -1,0 +1,24 @@
+<div id="products-container" [ngClass]="{ min :isShown}">
+  <h3>
+    Groceries
+  </h3>
+  <form [formGroup]="ingredientFormGroup">
+    <ul *ngIf="productList" id="productList">
+      <li *ngFor="let ingredient of productList; let i = index" class="productList-item">
+        <select formControlName="{{i}}">
+          <option value="">{{ingredient.currentProduct.purchaseAmount}} of
+            {{ingredient.currentProduct.title}} | {{ingredient.currentProduct.purchasePrice | currency}}</option>
+          <option class="productText" *ngFor="let product of ingredient.matchedProducts" [ngValue]="product">
+            <span class="productTextPurchaseAmount">{{product.purchaseAmount}} of </span><span
+              class="productTextTitle">{{product.title}}</span>
+            <span class="productTextPrice">{{product.purchasePrice | currency}}</span>
+          </option>
+        </select>
+        <span class="ingredientList-ingredient">for {{ingredient.quantity}} {{ingredient.unit}}
+          {{ingredient.parsedText}}</span>
+      </li>
+    </ul>
+  </form>
+  <div class="add button" (click)="addToShoppingList()">Add To Shopping List</div>
+  <!-- <span *ngIf="shoppingListPrice">{{shoppingListPrice | currency}}</span> -->
+</div>

@@ -1,0 +1,10 @@
+<app-filter id="filter"></app-filter>
+<!-- <div id="loading" [ngStyle]="{'display': displayLoading}">
+  <h2>{{recipePricePercentage | async}}</h2>
+</div> -->
+<div id="priceTiers" *ngIf="priceTiers">
+  <div class="tiers" *ngFor="let tier of priceTiers | async">
+    <app-price-tier [tier]="tier">
+    </app-price-tier>
+  </div>
+</div>

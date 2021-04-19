@@ -1,0 +1,13 @@
+#priceTiers {
+  height: 90vh;
+  box-sizing: content-box;
+}
+.tiers {
+  height:25%;
+  box-sizing: border-box;
+}
+
+#loading {
+  padding-top: 20%;
+  overflow-y: hidden; 
+}

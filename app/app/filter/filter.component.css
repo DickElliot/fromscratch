@@ -1,0 +1,141 @@
+#filter-container {
+    height: 3vh;
+    min-height: 20px;
+    background-color: rgb(154,4,4);
+    font-family: garamond, Helvetica, sans-serif;
+    font-size: 1em;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 10px 5px#3d3d3d9c;
+}
+#filter-container:hover {
+    background-color:lightcoral;
+    box-shadow: 0 0;
+}
+
+#filter-icon {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    font-size: 2vw;
+    width: 100%;
+}
+#filter-icon img {
+    padding: 5px;
+    width: 100%;
+    cursor: pointer;
+}
+
+#filter-content {
+    display: none;
+    padding:0;
+    align-items:center;
+    justify-content: space-evenly;
+}
+#filter-content label {
+    color: white;
+}
+
+.form-price {
+    background: rgb(61, 118, 156);
+    height: 3px;
+    margin: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    outline: none;
+    -webkit-appearance: none;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    opacity: 0.7;
+    border-radius: 2px;
+}
+.form-price input {
+    margin: 0;
+    padding: 0;
+}
+.form-price input:first {
+    padding-right: -25px;
+}
+.form-price input:hover {
+    opacity:1;
+}
+
+#serving-input {
+    height: 20px;
+    width: 40px;
+    background-color:#00000000;
+    border: 1px solid black;
+}
+
+.form-diet {
+    display: flex;
+    border:1px solid red;
+    flex-direction: row;
+    
+}
+.form-diet input {
+    padding: 0;
+    margin:0 5px;
+}
+
+@media only screen and (max-width: 650px) {
+    .price-input {
+        width: 15vw;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #filter-container {
+        font-size: 0.8em;
+    }
+    
+     .form-price {
+        flex-direction: row;
+        /* align-items: flex-end; */
+        /* justify-content: center; */
+        flex-wrap: wrap;
+    }
+    
+    #form-servingssize {
+        flex-direction: column;
+        align-items: center;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+    }    
+
+    
+    #form-diet {
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-template-rows: auto auto auto;
+    }
+    
+    .vege-label {
+        grid-column: 1/2;
+        grid-row: 1/2;
+        
+    }
+    .vege-input {
+        grid-column: 2/3;
+        grid-row: 1/2;
+    }
+    .vegan-label {
+        grid-column: 1/2;
+        grid-row: 2/3;
+    }
+    .vegan-input {
+        grid-column: 2/3;
+        grid-row: 2/3;
+    }
+    .gluten-label {
+        grid-column: 1/2;
+        grid-row: 3/4;
+    }
+    .gluten-input {
+        grid-column: 2/3;
+        grid-row: 3/4;
+    }
+}
+

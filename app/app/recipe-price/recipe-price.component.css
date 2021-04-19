@@ -1,0 +1,27 @@
+#price {
+    font-size: 3em;
+    height: 100%;
+    background-color: #ff605b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Libre Franklin;
+}
+
+#price:hover {
+    background-color: lightcoral;
+    cursor: pointer;
+}
+
+.max {
+    min-width:100%;
+}
+
+.min {
+    width: 2vw;
+    color: #00000000;
+}
+
+.hidden {
+    display: none;
+}

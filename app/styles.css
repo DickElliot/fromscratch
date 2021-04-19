@@ -1,0 +1,31 @@
+/* Global styles */
+@font-face {
+  font-family: aaargh;
+  src: url("Aaargh.ttf");
+}
+h1 {
+    color: black;
+    font-size: 250%;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+  background-image: url("images/tiled_background.jpg");
+  background-repeat: repeat;
+  width: 100vw;
+  box-sizing: border-box;
+  height: 100vh;
+  overflow-x:hidden;
+  overflow-y: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling: touch;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+margin:0
+}
+
