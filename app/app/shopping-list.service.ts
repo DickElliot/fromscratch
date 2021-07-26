@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable, from, of } from 'rxjs';
+import { Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Ingredient, IShoppingListIngredient } from './ingredient.model';
+import { IShoppingListIngredient } from './ingredient.model';
 import { ShoppingList } from './shopping-list';
 import { PricedProduct } from './IProduct';
 
