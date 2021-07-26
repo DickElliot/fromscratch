@@ -1,4 +1,4 @@
-import { IProduct, IPricedProduct } from "./IProduct";
+import { IProduct, IPricedProduct, PricedProduct, IAmount, purchaseUnit } from "./IProduct";
 
 export interface IIngredient {
   originalText: string;
@@ -7,251 +7,201 @@ export interface IIngredient {
   unitClass?: string;
   quantity?: string;
   parsedText?: string;
-  currentProduct?: IPricedProduct;
-  matchedProducts?: IPricedProduct[];
+  // currentProduct?: IPricedProduct;
+  // matchedProducts?: IPricedProduct[];
+}
+
+
+export interface IShoppingListIngredient {
+  ingredient: Ingredient;
+  servingSize: number;
 }
 
 export class Ingredient implements IIngredient {
-  private newMatchedProducts: IPricedProduct[] = [];
   originalText: string;
   recipe: string;
-  unit?: string;
+  unit: string = '';
   unitClass?: string;
-  quantity?: string;
-  parsedText?: string;
-  currentProduct?: IPricedProduct;
-  matchedProducts?: IPricedProduct[];
-  constructor(originalText: string, recipeTitle: string, newQuantity?: any, currentProduct?: IPricedProduct,
-    matchedProducts?: IPricedProduct[]) {
+  quantity: string = '';
+  parsedText: string = '';
+  currentProduct?: PricedProduct;
+  matchedProducts: PricedProduct[] = [];
+  constructor(originalText: string, recipe: string) {
     this.originalText = originalText;
-    this.recipe = recipeTitle;
-    this.Creator();
-    this.currentProduct = currentProduct || null;
-    this.matchedProducts = matchedProducts || null;
-    if (newQuantity != null) {
-      this.setNewQuantity = newQuantity;
-    }
-  }
-
-  Creator(): void {
-    this.unit = '';
-    this.quantity = '';
-    this.parsedText = this.parseOriginalText(this.originalText).trim();
-    if (this.unit == '' || this.unit == null) {
+    this.recipe = recipe;
+    this.parsedText = this.parseOriginalText(this.originalText);
+    if (this.unit === '') {
       this.unit = 'item';
     }
-    if (this.unit != 'item' && typeof this.unit != 'number') {
+    if (this.unit !== 'item' && typeof this.unit !== 'number') {
       this.quantity = this.fractionsToPercentages(this.quantity);
     }
     this.matchedProducts = this.isIngredientAbleToBeMatched();
   }
-  clearMatchedProducts() {
-    this.matchedProducts = [].slice();
+
+  get getMatchedProducts() {
+    return this.matchedProducts;
   }
-  private isIngredientAbleToBeMatched(): IPricedProduct[] {
-    let matchedProductsArray: IPricedProduct[] = [];
-    let unmatchables: object = {
+
+  clearMatchedProducts(): void {
+    this.matchedProducts = [];
+  }
+
+  /**
+   * 
+   * @returns 
+   */
+  private isIngredientAbleToBeMatched(): PricedProduct[] {
+    let matchedProductsArray: PricedProduct[] = [];
+    // Divided hash allows match checking to be specific for it's
+    // food group
+    let stopMatch: { [key: string]: string[] } = {
       bread: ['bread', 'pitta', 'pita', 'flatbread'],
-      wine: ['red', 'white', 'vermouth'],
-      salt: ['ground'],
+      wine: ['wine', 'vermouth'],
+      salt: ['salt'],
     };
-    let matchFlags: object = {
-      bread: ['sticks', 'tortilla', 'flatbreads', 'crumbs'],
+    let allowMatch: { [key: string]: string[] } = {
+      bread: ['sticks', 'tortilla', 'flatbreads', 'crumbs', 'garlic'],
       wine: ['vinegar', 'dressing'],
       salt: ['coarse', 'rock', '-salt'],
     };
-    let unmatchableProducts: object = {
+    let fillerProducts: { [key: string]: IProduct } = {
       bread: { title: 'bread', price: '4', unit: 'item', supermarketSection: 'none' },
       wine: { title: 'wine', price: '10', unit: 'item', supermarketSection: 'none' },
       salt: { title: 'salt', price: '0.1', unit: 'item', supermarketSection: 'none' },
     };
-    let foodGroups: string[] = Object.keys(unmatchables).concat(Object.keys(matchFlags).filter((key: string) => !(Object.keys(unmatchables).includes(key))));
-    let foodGroup: string = '';
-    for (let food of foodGroups) {
-      if (this.parsedText.includes(food + ' ' || ' ' + food)) {
-        foodGroup = food;
+    let foodGroups = Object.keys(stopMatch);
+    let foodGroup = '';
+    const parsedWords: Map<string, number> = new Map();
+    let findFoodGroup = false;
+    for (let word of this.parsedText!.trim().split(' ')) {
+      parsedWords.set(word, 1);
+      if (stopMatch[word] !== undefined) {
+        findFoodGroup = true;
       }
+      break;
     }
-    if (foodGroup != '') {
-      let flagFound: boolean = false;
-      for (let flag of matchFlags[foodGroup]) {
-        if (this.parsedText.includes(flag)) {
-          flagFound = true;
+    if (findFoodGroup) {
+      for (let group of foodGroups) {
+        for (let food of stopMatch[group]) {
+          if (parsedWords.has(food)) {
+            foodGroup = group;
+            break;
+          }
         }
       }
-      if (flagFound == false) {
-        let fillerPurchaseAmount = (): string => { if (Number(this.quantity)) { return this.quantity; } else return '1'; };
-        let fillerProduct: IPricedProduct = {
-          title: unmatchableProducts[foodGroup].title,
-          price: unmatchableProducts[foodGroup].price,
-          unit: unmatchableProducts[foodGroup].unit,
-          minPurchaseAmount: '1',
-          supermarketSection: unmatchableProducts[foodGroup].superMarketSection,
-          purchaseAmount: fillerPurchaseAmount(),
-          purchasePrice: Number(unmatchableProducts[foodGroup].price) * Number(fillerPurchaseAmount()),
-        };
-        for (let i = 0; i < 10; i++) {
-          matchedProductsArray.push(fillerProduct);
+      if (foodGroup !== '') {
+        let flagFound = false;
+        for (let flag of allowMatch[foodGroup]) {
+          if (this.parsedText?.includes(flag)) {
+            flagFound = true;
+            break;
+          }
+        }
+        if (flagFound === false) {
+          let fillerPurchaseAmount = (): number => { if (!isNaN(Number(this.quantity))) { return Number(this.quantity); } else return 1; };
+          let fillerProduct: IPricedProduct = {
+            title: fillerProducts[foodGroup].title,
+            price: fillerProducts[foodGroup].price,
+            unit: fillerProducts[foodGroup].unit,
+            minPurchaseAmount: '1',
+            supermarketSection: fillerProducts[foodGroup].supermarketSection,
+            purchaseAmount: fillerPurchaseAmount(),
+            purchasePrice: Number(fillerProducts[foodGroup].price) * Number(fillerPurchaseAmount()),
+          };
+          let newProduct: PricedProduct = new PricedProduct(fillerProduct);
+          for (let i = 0; i < 10; i++) {
+
+            matchedProductsArray.push(newProduct);
+          }
         }
       }
-      return matchedProductsArray;
-    } else { return []; }
-    return [];
+    }
+    return matchedProductsArray;
   }
 
-  addToMatchedProducts(product: IProduct) {
-    let pricingDetails: any[] = this.priceProduct(product);
-    if (pricingDetails[0] != 0 && pricingDetails[1] != 0) {
-      let pricedProduct: IPricedProduct = {
-        title: product.title,
-        price: product.price,
-        unit: product.unit,
-        supermarketSection: product.supermarketSection,
-        minPurchaseAmount: product.minPurchaseAmount,
-        purchaseAmount: pricingDetails[0],
-        purchasePrice: pricingDetails[1]
-      }
-      if (this.currentProduct == null) {
-        this.currentProduct = pricedProduct;
-      } else if (pricedProduct.purchasePrice < this.currentProduct.purchasePrice) {
-        this.currentProduct = pricedProduct;
-      }
-      this.matchedProducts.push(pricedProduct);
+  set setNewQuantity(newQuantity: string) {
+    console.log(`this.q: ${this.quantity} vs. ${newQuantity}`)
+    if (this.quantity != newQuantity.toString()) {
+      console.log('reaced');
+      this.quantity = newQuantity;
+      let title = this.currentProduct.title;
+      let newAmount = this.getPurchaseAmount();
+      this.matchedProducts.forEach((product) => {
+        product.purchase(newAmount);
+      });
     }
   }
 
-  set setCurrentProduct(product: IPricedProduct) {
-    if (product.title in this.matchedProducts) {
+
+  // Decoupling pricing method could allow this to be cleaner
+  // a queue implementation with an unmovable head could be cool 
+  // If currentProduct empty & matchedProducts full then bump 
+  // cheapest product. Though could run into issues of adding 
+  // more products later. Don't lose current ingredient on repricing
+  private repriceIngredient() {
+    let currentProductHolder = this.currentProduct;
+    let productsHolder = this.matchedProducts!.slice();
+    this.matchedProducts = [].slice();
+    productsHolder.forEach((product) => {
+      // this.addToMatchedProducts(product);
+    });
+    // this.currentProduct = this.matchedProducts.find((product) => product.title == currentProductHolder?.title);
+  }
+
+  addToMatchedProducts(IProduct: IProduct) {
+    // console.log('adding products');
+    const amount = this.getPurchaseAmount();
+    if (amount.quantity === 0) console.log(`${this.parsedText}, ${this.unit}, ${this.quantity}: ${amount.quantity}`);
+    const pricedProduct: PricedProduct = new PricedProduct(IProduct);
+    pricedProduct.purchase(amount);
+    // if (pricedProduct.purchasePrice === 0) console.log(`${this.parsedText}, ${this.unit}, ${this.quantity}: ${amount.quantity}`);
+    if (this.currentProduct == null) {
+      this.currentProduct = pricedProduct;
+    } else if (pricedProduct.purchasePrice < this.currentProduct?.purchasePrice) {
+      this.currentProduct = pricedProduct;
+    }
+    this.matchedProducts?.push(pricedProduct);
+  }
+  private getPurchaseAmount(): IAmount {
+    const unitConversion: { [key: string]: number } = {
+      tsp: 3.5, tbsp: 14, dessertspoon: 20,
+      bunch: 1, small: 1,
+      medium: 1.5, large: 2.5,
+      knob: 1, few: 1, squeeze: 1,
+      splash: 1, bottle: 1,
+      ml: 1, l: 1000, kg: 1000, g: 1, pinch: 1,
+      cup: 200, cm: 10, handful: 10, thumbsized: 40, whole: 1, item: 1
+    };
+    const types: { [key: string]: number } = {
+      item: 1, Each: 1,
+      whole: 1, canned: 1,
+      small: 1, medium: 1,
+      large: 1,
+    }
+    let unit: purchaseUnit;
+    if (types[this.unit] !== undefined) {
+      unit = purchaseUnit.whole;
+    } else unit = purchaseUnit.weight;
+    let quantity = Number(this.quantity) * unitConversion[this.unit];
+    const amount: IAmount = {
+      quantity: quantity,
+      unit: unit,
+    }
+    return amount;
+  }
+
+  set setCurrentProduct(product: any) {
+    if (product.title in this.matchedProducts!) {
       this.currentProduct = product;
     } else { console.log("Can't set as product, hasn't been matched to ingredient!"); }
   }
 
-  set setNewQuantity(newQuantity) {
-    if (this.quantity != newQuantity.toString()) {
-      this.quantity = newQuantity;
-      this.repriceIngredient();
-    }
-  }
-
-  private repriceIngredient() {
-    let currentProductHolder = this.currentProduct;
-    let productsHolder: IPricedProduct[] = this.matchedProducts.slice();
-    this.matchedProducts = [].slice();
-    productsHolder.forEach((product: IPricedProduct) => {
-      this.addToMatchedProducts(product);
-    });
-    this.currentProduct = this.matchedProducts.find((product) => product.title == currentProductHolder.title);
-    //console.log('title:', this.currentProduct.title);
-  }
 
   private sortMatchedProductsByCheapest() {
-    this.matchedProducts.sort((a, b) => a.purchasePrice - b.purchasePrice);
+    this.matchedProducts?.sort((a, b) => a.purchasePrice - b.purchasePrice);
   }
 
-  priceProduct(product: IProduct): any[] {
-    let purchasePrice = 0;
-    let purchaseAmount = 0;
-    let unitTypes = {
-      spoon: { tsp: 14, tbsp: 25, dessertspoon: 20 },
-      amount: { bunch: 1, small: 1, medium: 1.5, large: 2.5, knob: 1, few: 1, squeeze: 1, splash: 1, bottle: 1 },
-      liquid: { ml: 1, l: 0.1 },
-      weights: { kg: 1000, g: 1, pinch: 1 },
-      volume: { cup: 200, cm: 10, handful: 10, thumbsized: 40 },
-      each: { item: 'item', cans: 'cans', squares: 'squares' }
-    };
-    let quantityTypes = {
-      amount: { bunch: 1, small: 1, handful: 10 },
-    };
-    let itemSizes = {
-      onion: 150,
-      banana: 120,
-      potato: 120,
-      pumpkin: 600,
-      shallots: 80,
-      garlic: 70,
-      'red onion': 150,
-      mushrooms: 50,
-      avocado: 120,
-      eggplant: 150,
-      'ball of moz': 200,
-      broccoli: 100,
-      cabbage: 900,
-    };
-    let ingredientAmount: number = 1;
-    if (Number(this.quantity)) {
-      ingredientAmount = Number(this.quantity);
-    } else if (Object.keys(quantityTypes.amount).includes(this.quantity)) {
-      ingredientAmount = quantityTypes.amount[this.quantity];
-    }
-    let productAmount = Number(product.minPurchaseAmount);
-    if (product.minPurchaseAmount.includes('kg')) {
-      productAmount = Number(product.minPurchaseAmount.match(/\d+/)) * 1000;
-    }
-    else if (product.minPurchaseAmount.includes('ml') || product.minPurchaseAmount.includes('g')) {
-      productAmount = Number(product.minPurchaseAmount.match(/\d+/));
-    }
-    else if (product.minPurchaseAmount.includes('l')) {
-      productAmount = Number(product.minPurchaseAmount.match(/\d+/)) * 1000;
-    };
-    if (productAmount == 0 || Number(productAmount) == NaN) { productAmount = 1; };
-    if (Object.keys(unitTypes.spoon).includes(this.unit)) {
-      ingredientAmount = ingredientAmount * unitTypes.spoon[this.unit];
-    }
-    else if (Object.keys(unitTypes.amount).includes(this.unit)) {
-      ingredientAmount = unitTypes.amount[this.unit] * productAmount;
-    }
-    else if (Object.keys(unitTypes.liquid).includes(this.unit)) {
-      ingredientAmount = ingredientAmount * unitTypes.liquid[this.unit];
-    }
-    else if (Object.keys(unitTypes.weights).includes(this.unit)) {
-      ingredientAmount = ingredientAmount * unitTypes.weights[this.unit];
-    }
-    else if (Object.keys(unitTypes.volume).includes(this.unit)) {
-      ingredientAmount = ingredientAmount * unitTypes.volume[this.unit];
-    }
-    else if (Object.keys(unitTypes.each).includes(this.unit)) {
-      if (this.unit == 'item') {
-        if (product.unit.includes('pk')) {
-          ingredientAmount = ingredientAmount;
-        }
-        if (Object.keys(itemSizes).includes(this.parsedText || this.parsedText + 's')) {
-          ingredientAmount = ingredientAmount * itemSizes[this.parsedText];
-        }
-      } else if (this.unit == 'cans') {
-        if (product.supermarketSection == 'fruit-veg') {
-          ingredientAmount = ingredientAmount * 400;
-        } else { ingredientAmount = ingredientAmount }
-      } else if (this.unit == 'squares') {
-        ingredientAmount = ingredientAmount * (0.1 * productAmount);
-      }
-    }
-    let amount: number = 1;
-    if (product.unit.trim() == product.minPurchaseAmount.trim() || typeof Number(product.minPurchaseAmount.trim()) == 'number' && product.unit.trim() == 'Each') {
-      while (ingredientAmount > (amount * productAmount)) {
-        amount++;
-      }
-      purchaseAmount = amount;
-      purchasePrice = amount * Number(product.price.replace('$', ''));
-      return [purchaseAmount, purchasePrice];
-    }
-    else if (product.unit == 'kg') {
-      if (productAmount > ingredientAmount) {
-        let purchaseAmount: string = product.minPurchaseAmount;
-        purchasePrice = (productAmount / 1000) * (Number(product.price.replace('$', '')));
-        return [purchaseAmount, purchasePrice];
-      } else {
-        if (this.unit == 'g') {
-          return [ingredientAmount, (ingredientAmount / 1000) * (Number(product.price.replace('$', '')))];
-        } else {
-          while (ingredientAmount < amount * productAmount) {
-            amount++;
-          }
-        }
-        return [amount, amount * (Number(product.price.replace('$', '')))];
-      }
-    }
-    return [purchaseAmount, purchasePrice];
-  }
 
   /** 
    *  Parses the original text of the ingredient to
@@ -259,11 +209,16 @@ export class Ingredient implements IIngredient {
    *  ingredient has. E.g. 2 Tsp Olive Oil will create a parse match of olive oil with a unit of teaspoon
    *  and a quantity of 2
    */
-  private parseOriginalText(originalText: string): string {
-    let parsedText: string = originalText.toLowerCase().trim().replace(/\((.*?)\)/gi, '').split(',')[0].split(' or ')[0];
-    let quantity: string = '';
-    let unit: string = '';
-    let parsedTextArray: string[] = parsedText.split(/\s+/);
+  parseOriginalText(originalText: string): string {
+    let parsedText = originalText.toLowerCase().trim()
+      .replace(/\((.*?)\)/gi, '')
+      .split(',')[0]
+      .split(' or ')[0];
+    const firstWord = parsedText.split(/\s+/)[0];
+    parsedText = parsedText
+      .replace(firstWord, this.fractionsToPercentages(firstWord));
+    let quantity = '';
+    let unit = '';
     let previousWord: string;
     let currentWord: string;
     let nextWord: string = '';
@@ -272,129 +227,130 @@ export class Ingredient implements IIngredient {
     const wordsAroundHyphenPattern: RegExp = /[a-z]+[\-][a-z]+/i;
     const nonNumbersPattern: RegExp = /[\D]+/i;
     const alphabetPattern: RegExp = /[a-z]+/i;
-    parsedText = parsedText.replace(parsedText.split(/\s+/)[0], this.fractionsToPercentages(parsedText.split(/\s+/)[0]));
-    // Fix spaces in hyphenated terms
-    if (parsedText.includes('-') && (!parsedText.match(wordsAroundHyphenPattern))) {
-      if (parsedText.includes(' -') || parsedText.includes('- ')) {
+    parsing: {
+      // Parse spaces in hyphenated terms
+      if (parsedText.includes(' -' || '- ') && (!parsedText.match(wordsAroundHyphenPattern))) {
         parsedText = parsedText.replace(' -', '-').replace('- ', '-');
       }
-    }
-    // Fix '2 x 400g' pattern
-    if (parsedText.includes(' x ')) {
-      let thisPattern: RegExp = /[.\d]+ x [.\d]+/gi;
-      if (parsedText.match(thisPattern)) {
-        let thisPatternMatch: RegExpMatchArray = parsedText.match(thisPattern);
-        let result: string[] = thisPatternMatch.toString().split(' x ');
-        let actualResult: number = Number(result[0]) * Number(result[1]);
-        parsedText = parsedText.replace(thisPattern, actualResult.toString());
-        this.quantity = (parsedText.match(unitPattern))[0].match(numbersPattern)[0];
-        this.unit = (parsedText.match(alphabetPattern))[0].match(alphabetPattern)[0];
-        parsedText = parsedText.replace(this.quantity, '').replace(this.unit, '');
-        return parsedText;
-      }
-    }
-    let amounts: string[] = [];
-    parsedTextArray = parsedText.split(/\s+/);
-    if (parsedTextArray[0].includes('-') && !(parsedText.match(wordsAroundHyphenPattern))) {
-      let hyphenedWord: string = parsedTextArray[0];
-      amounts = hyphenedWord.split('-');
-      let firstAmount: string = amounts[0];
-      let secondAmount: string = amounts[1];
-      if (alphabetPattern.test(firstAmount) == alphabetPattern.test(firstAmount)) {
-        let ingredientUnit;
-        if (secondAmount.match(alphabetPattern) != null) {
-          ingredientUnit = secondAmount.match(alphabetPattern);
-        } else if (firstAmount.match(alphabetPattern) != null) {
-          ingredientUnit = firstAmount.match(alphabetPattern);
-        }
-        firstAmount = firstAmount.replace(alphabetPattern, '');
-        secondAmount = secondAmount.replace(alphabetPattern, '');
-        if (firstAmount.match(numbersPattern) && secondAmount.match(numbersPattern)) {
-          let averageAmount = (Number(firstAmount.match(numbersPattern)) + Number(secondAmount.match(numbersPattern))) / 2;
-          this.quantity = averageAmount.toString();
-          this.unit = ingredientUnit;
-          return parsedText;
+      // Parse '2 x 400g' pattern
+      if (parsedText.includes(' x ')) {
+        let thisPattern: RegExp = /[.\d]+ x [.\d]+/gi;
+        if (parsedText.match(thisPattern)) {
+          let resultEquation = parsedText.match(thisPattern)?.toString().split(' x ');
+          let result: number = Number(resultEquation?.[0]) * Number(resultEquation?.[1]);
+          parsedText = parsedText.replace(thisPattern, result.toString());
+          this.quantity = (parsedText.match(unitPattern))![0].match(numbersPattern)![0];
+          this.unit = (parsedText.match(alphabetPattern))![0].match(alphabetPattern)![0];
+          parsedText = parsedText.replace(this.quantity, '').replace(this.unit, '');
+          break parsing;
         }
       }
-      // Greater unit match if there is text like 1 pinch - 1 tsp    
-      /* else if (nonNumbersPattern.test(firstAmount) && nonNumbersPattern.test(secondAmount)) {
-        console.log(`1) complicated hyphen checking found ${parsedText} from ${originalText} in ${this.recipe}`);
-      }
-      else if (nonNumbersPattern.test(firstAmount) || nonNumbersPattern.test(secondAmount)) {
-        console.log(`2) complicated hyphen checking found ${parsedText} from ${originalText} in ${this.recipe}`);
-      } */
-    }
-    if (parsedText.includes('/')) {
-      let wordSplitBySlash = parsedText.split('/');
-      if (unitPattern.test(wordSplitBySlash[0]) && unitPattern.test(wordSplitBySlash[1])) {
-        parsedText = parsedText.replace('/' + wordSplitBySlash[1].match(unitPattern), '');
-      } else if (numbersPattern.test(wordSplitBySlash[0]) && numbersPattern.test(wordSplitBySlash[1])) {
-        let secondNumber: RegExpMatchArray = wordSplitBySlash[1].match(numbersPattern);
-        let fraction: any = wordSplitBySlash[0] + '/' + secondNumber;
-        let percentage: string = this.fractionsToPercentages(fraction);
-        parsedText = parsedText.replace(fraction, percentage);
-      }
-    }
-    parsedTextArray = parsedText.split(/\s+/);
-    for (let i = 0; i < parsedTextArray.length; i++) {
-      currentWord = parsedTextArray[i].trim();
-      if (i < parsedTextArray.length - 1) {
-        nextWord = parsedTextArray[i + 1].trim();
-      } else { nextWord = ''; }
-      if (unitPattern.test(currentWord)) {
-        if (numbersPattern.test(currentWord)) {
-          quantity = currentWord.match(numbersPattern).toString();
-        }
-        if (alphabetPattern.test(currentWord)) {
-          if (this.isUnit(currentWord.match(alphabetPattern)[0])) unit = currentWord.match(alphabetPattern)[0];
-        } else if (alphabetPattern.test(nextWord)) {
-          if (this.isUnit(nextWord)) unit = nextWord;
-        }
-        parsedText = parsedText.replace(unit, '').replace(quantity, '').trim();
-        this.quantity = quantity;
-        this.unit = unit;
-        return parsedText;
-      }
-      else if (!numbersPattern.test(currentWord)) {
-        if (this.isUnit(currentWord)) unit = currentWord;
-        if (quantity.length == 0 && !numbersPattern.test(parsedText)) {
-          quantity = '1';
-        } else if (numbersPattern.test(parsedText)) { quantity = parsedText.match(numbersPattern).toString(); }
-        parsedText = parsedText.replace(unit, '').replace(quantity, '');
-        this.unit = unit;
-        this.quantity = quantity;
-        return parsedText;
-      }
-      else if (nextWord != '') {
-        if (originalText == '½ cup freshly grated Parmigiano-Reggiano, or as needed') { console.log(`cheese found ${nextWord}`); }
-        let quantityCheck = false;
-        if (this.isUnit(nextWord)) unit = nextWord;
-        if (this.isQuantity(currentWord) && quantityCheck == false) {
-          quantity = currentWord;
-          quantityCheck = true;
-        } else if (quantityCheck == false) {
-          for (let x = 0; x < parsedTextArray.length && quantityCheck == false; x++) {
-            if (this.isQuantity(parsedTextArray[x])) {
-              quantity = this.fractionsToPercentages(parsedTextArray[x].trim());
-              quantityCheck = true;
-            }
+      let parsedTextArray = parsedText.split(/\s+/);
+      if (parsedTextArray[0].includes('-') && !(parsedText.match(wordsAroundHyphenPattern))) {
+        let amounts: string[] = [];
+        let hyphenedWord: string = parsedTextArray[0];
+        amounts = hyphenedWord.split('-');
+        let firstAmount: string = amounts[0];
+        let secondAmount: string = amounts[1];
+        if (alphabetPattern.test(firstAmount) == alphabetPattern.test(firstAmount)) {
+          let ingredientUnit = '';
+          if (secondAmount.match(alphabetPattern) != null) {
+            ingredientUnit = secondAmount.match(alphabetPattern)![0];
+          } else if (firstAmount.match(alphabetPattern) != null) {
+            ingredientUnit = firstAmount.match(alphabetPattern)![0];
           }
-        } else if (quantity.length == 0 && !numbersPattern.test(parsedText)) {
-          quantity = '1';
+          firstAmount = firstAmount.replace(alphabetPattern, '');
+          secondAmount = secondAmount.replace(alphabetPattern, '');
+          if (firstAmount.match(numbersPattern) && secondAmount.match(numbersPattern)) {
+            let averageAmount = (Number(firstAmount.match(numbersPattern)) + Number(secondAmount.match(numbersPattern))) / 2;
+            this.quantity = averageAmount.toString();
+            this.unit = ingredientUnit;
+            break parsing;
+          }
         }
-        this.quantity = quantity;
-        this.unit = unit;
-        parsedText = parsedText.replace(unit, "").replace(quantity, "");
-        return parsedText;
+        // Greater unit match if there is text like 1 pinch - 1 tsp    
+        /* else if (nonNumbersPattern.test(firstAmount) && nonNumbersPattern.test(secondAmount)) {
+          console.log(`1) complicated hyphen checking found ${parsedText} from ${originalText} in ${this.recipe}`);
+        }
+        else if (nonNumbersPattern.test(firstAmount) || nonNumbersPattern.test(secondAmount)) {
+          console.log(`2) complicated hyphen checking found ${parsedText} from ${originalText} in ${this.recipe}`);
+        } */
+      }
+      if (parsedText.includes('/')) {
+        let wordSplitBySlash = parsedText.split('/');
+        if (unitPattern.test(wordSplitBySlash[0]) && unitPattern.test(wordSplitBySlash[1])) {
+          parsedText = parsedText.replace('/' + wordSplitBySlash[1].match(unitPattern), '');
+        } else if (numbersPattern.test(wordSplitBySlash[0]) && numbersPattern.test(wordSplitBySlash[1])) {
+          let secondNumber = wordSplitBySlash[1].match(numbersPattern)!;
+          let fraction = wordSplitBySlash[0] + '/' + secondNumber;
+          let percentage = this.fractionsToPercentages(fraction);
+          parsedText = parsedText.replace(fraction, percentage);
+        }
+      }
+      parsedTextArray = parsedText.split(/\s+/);
+      for (let i = 0; i < parsedTextArray.length; i++) {
+        currentWord = parsedTextArray[i].trim();
+        if (i < parsedTextArray.length - 1) {
+          nextWord = parsedTextArray[i + 1].trim();
+        } else { nextWord = ''; }
+        if (unitPattern.test(currentWord)) {
+          if (numbersPattern.test(currentWord)) {
+            quantity = currentWord.match(numbersPattern)!.toString();
+          }
+          if (alphabetPattern.test(currentWord)) {
+            if (this.isUnit(currentWord.match(alphabetPattern)![0])) unit = currentWord.match(alphabetPattern)![0];
+          } else if (alphabetPattern.test(nextWord)) {
+            if (this.isUnit(nextWord)) unit = nextWord;
+          }
+          parsedText = parsedText.replace(unit, '').replace(quantity, '').trim();
+          this.quantity = quantity;
+          this.unit = unit;
+          break parsing;
+        }
+        else if (!numbersPattern.test(currentWord)) {
+          if (this.isUnit(currentWord)) unit = currentWord;
+          if (quantity.length == 0 && !numbersPattern.test(parsedText)) {
+            quantity = '1';
+          } else if (numbersPattern.test(parsedText)) { quantity = parsedText.match(numbersPattern)!.toString(); }
+          parsedText = parsedText.replace(unit, '').replace(quantity, '');
+          this.unit = unit;
+          this.quantity = quantity;
+          break parsing;
+        }
+        else if (nextWord != '') {
+          let quantityCheck = false;
+          if (this.isUnit(nextWord)) unit = nextWord;
+          if (this.isQuantity(currentWord) && quantityCheck == false) {
+            quantity = currentWord;
+            quantityCheck = true;
+          } else if (quantityCheck == false) {
+            for (let x = 0; x < parsedTextArray.length && quantityCheck == false; x++) {
+              if (this.isQuantity(parsedTextArray[x])) {
+                quantity = this.fractionsToPercentages(parsedTextArray[x].trim());
+                quantityCheck = true;
+              }
+            }
+          } else if (quantity.length == 0 && !numbersPattern.test(parsedText)) {
+            quantity = '1';
+          }
+          this.quantity = quantity;
+          this.unit = unit;
+          parsedText = parsedText.replace(unit, '').replace(quantity, '');
+          break parsing;
+        }
       }
     }
-    if (unit != null) {
-      this.unit = unit;
+    const edgeCases: { [key: string]: string } = {
+      egg: 'eggs',
+      onion: 'onions',
+      lemon: 'lemons',
+      'of butter': 'butter',
     }
-    if (quantity != null) {
-      this.quantity = quantity;
+    parsedText = parsedText.trim();
+    if (edgeCases[parsedText] !== undefined) {
+      parsedText = edgeCases[parsedText];
     }
-    return parsedText;
+    return parsedText.trim();
   }
 
   private isQuantity(quantity: string): boolean {
@@ -410,7 +366,7 @@ export class Ingredient implements IIngredient {
   }
 
   private isUnit(unit: string): boolean {
-    const u = {
+    const u: { [key: string]: { [key: string]: { [key: string]: any[] } } } = {
       weight: {
         pound: { shorthand: ["lb", "lbs"], conversions: [{ ounce: 28 }, { grams: 10 }] },
         ounce: { shorthand: ["oz", "oz."] },
@@ -430,7 +386,7 @@ export class Ingredient implements IIngredient {
       whole: {
         small: { shorthand: ["sml"] },
         medium: { shorthand: ["med"] },
-        large: { shorthand: ["lrg"], small: 0.3, medium: 1.5 },
+        large: { shorthand: ["lrg"], conversions: [{ small: 0.3 }, { medium: 0.7 }] },
         knob: { shorthand: ["knob"] },
         bunch: { shorthand: ['bunch'] },
         handful: { shorthand: ['handful'] },
@@ -443,8 +399,8 @@ export class Ingredient implements IIngredient {
         if (unit == unitType) {
           return true;
         }
-        for (let ref of u[unitClass][unitType].shorthand) {
-          if (unit == ref) {
+        for (let shorthand of u[unitClass][unitType].shorthand) {
+          if (unit == shorthand) {
             return true;
           }
         }
@@ -454,7 +410,7 @@ export class Ingredient implements IIngredient {
   }
 
   private fractionsToPercentages(fraction: string): string {
-    const fractionsToDecimals = {
+    const fractionsToDecimals: { [key: string]: number } = {
       '¼': 0.25,
       '½': 0.5,
       '1/2': 0.5,
@@ -473,7 +429,7 @@ export class Ingredient implements IIngredient {
       '⅞': 0.875,
     };
     if (fraction in fractionsToDecimals) {
-      return fractionsToDecimals[fraction];
+      return fractionsToDecimals[fraction].toString();
     }
     else return fraction;
   }

@@ -14,7 +14,7 @@ $conn = new mysqli($hostname, $username, $password, $database);
 
 // Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+  die("Connection failed: " . $conn->connect_error);
 }
 
 //echo "Connected Successfully";
@@ -23,11 +23,11 @@ $result = mysqli_query($conn, $sql);
 $myArray = array();
 
 if ($result->num_rows > 0) {
-    // output data of each row
-    while ($row = $result->fetch_assoc()) {
-        $myArray[]  = $row;
-    }
-    print json_encode($myArray);
+  // output data of each row
+  while ($row = $result->fetch_assoc()) {
+    $myArray[]  = $row;
+  }
+  print json_encode($myArray);
 } else {
-    echo "0 results";
+  echo "0 results";
 }

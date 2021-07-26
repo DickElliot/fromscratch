@@ -6,7 +6,7 @@ header('Content-type: *');
 $hostname ="localhost";
 $username = "root";
 $database = "goodrecipes";
-$password = "";
+$password = "ZXyYSNMF38iV";
 
 
 //Connect to the goodrecipes database
@@ -52,5 +52,4 @@ if($requestMethod == "GET"){
     } else {
         echo "Couldn't get";
     }
-} 
-?>
+}

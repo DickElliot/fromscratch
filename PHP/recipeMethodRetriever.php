@@ -9,15 +9,15 @@ $dsn = 'mysql:dbname=goodrecipes;host=localhost';
 $username = "root";
 $password = "ZXyYSNMF38iV";
 try {
-    $goodrecipes = new PDO($dsn, $username, $password);
+  $goodrecipes = new PDO($dsn, $username, $password);
 } catch (PDOException $ex) {
-    echo 'Connection failed: ' . $ex->getMessage();
+  echo 'Connection failed: ' . $ex->getMessage();
 }
-$recipeTitle = str_replace('+', ' ', $_SERVER['QUERY_STRING']);
+$recipeTitle = urldecode($_SERVER['QUERY_STRING']);
 $sql = ("SELECT method FROM recipes WHERE (title='$recipeTitle')");
 $statement = $goodrecipes->prepare($sql);
 $statement->execute();
 $results = $statement->fetch(PDO::FETCH_ASSOC);
 if (count($results) > 0) {
-    print json_encode($results['method']);
+  print json_encode($results['method']);
 }

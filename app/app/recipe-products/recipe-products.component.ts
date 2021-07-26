@@ -2,8 +2,9 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Recipe } from '../recipe.model';
 import { ProductService } from '../product.service';
 import { RecipeService } from '../recipe.service';
-import { Ingredient } from '../ingredient.model';
-import { IPricedProduct } from '../IProduct';
+import { Ingredient, IShoppingListIngredient } from '../ingredient.model';
+import { ShoppingListService } from '../shopping-list.service';
+import { IPricedProduct, PricedProduct } from '../IProduct';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -28,6 +29,7 @@ export class RecipeProductsComponent implements OnInit {
     private productService: ProductService,
     private recipeService: RecipeService,
     private formBuilder: FormBuilder,
+    private listService: ShoppingListService
   ) {
     this.ingredientFormGroup = formBuilder.group({
     });
@@ -40,14 +42,16 @@ export class RecipeProductsComponent implements OnInit {
    * the current recipe. 
    */
   ngOnInit(): void {
+    console.log('recipe-products component');
     this.createProductList();
     for (let i = 0; i < this.recipe.ingredients.length; i++) {
       this.ingredientFormGroup.addControl(i.toString(), this.formBuilder.control('', [Validators.required]));
     }
     this.ingredientFormGroup.valueChanges.subscribe((result: any) => {
+      console.log('Ingredient FormGroup value changing');
       let update = false;
       for (const [key, value] of Object.entries(result)) {
-        if (value != "") {
+        if (value !== '') {
           update = true;
           let oldTitle = this.recipe.ingredients[key].currentProduct.title;
           let newTitle = result[key].title;
@@ -60,7 +64,10 @@ export class RecipeProductsComponent implements OnInit {
           }
         }
       }
-      if (update) this.recipeService.currentRecipe.next(this.recipe);
+      if (update) {
+        console.log('updating CurrentRecipe');
+        this.recipeService.currentRecipe.next(this.recipe);
+      };
     });
   }
 
@@ -74,6 +81,7 @@ export class RecipeProductsComponent implements OnInit {
     this.productList = [];
     for (let ingredient of this.recipe.ingredients) {
       if (ingredient.currentProduct) {
+        console.log('createProductList');
         this.productList.push(ingredient);
         this.shoppingListPrice += Number(ingredient.currentProduct.purchasePrice);
       }
@@ -86,12 +94,16 @@ export class RecipeProductsComponent implements OnInit {
    * shopping list menu
    */
   addToShoppingList(): void {
-    this.createProductList();
-    this.productService.shoppingList.next(this.productList);
-    this.productService.shoppingListPrice.next(this.shoppingListPrice);
+    console.log('Product component addToShoppingList');
+    let products: PricedProduct[] = [];
+    this.productList.forEach((ingredient) => {
+      products.push(ingredient.currentProduct);
+    });
+    this.listService.addToShoppingList(products, Number(this.recipe.servingSize), this.recipe.title);
   }
-  thisChosen(prod: IPricedProduct) {
-    console.log(prod.title);
+
+  thisChosen(product: IPricedProduct) {
+    console.log(product.title);
   }
   /**
    *  Changes component title text 

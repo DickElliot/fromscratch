@@ -12,7 +12,7 @@ import { debounceTime } from 'rxjs/operators';
 })
 /**
  * The is the main component to display a a recipe,
- * it is 'fleshed out', by it's children components.
+ * it is 'fleshed out', by recipe- components.
  */
 export class RecipeSkeletonComponent implements OnInit {
   recipe: Recipe;
@@ -41,7 +41,7 @@ export class RecipeSkeletonComponent implements OnInit {
     document.body.classList.add('recipeBackground');
     this.recipeService.currentRecipe.subscribe((recipe: Recipe) => { this.recipe = recipe });
     this.recipeService.downloadRecipeMethod(this.recipe.title).subscribe((method: string[]) => this.recipe.method = method);
-    /** This sets the single recipes serving size, allowing for a temporary change of serving */
+    /** This sets the single recipes serving size, allowing for view change of serving */
     this.recipeDetailsFormGroup.valueChanges.pipe(debounceTime(250)).subscribe((values: any) => {
       if (values['servingsize'] != this.recipe.servingSize && values['servingsize'] > 0) {
         console.log(`serving size changed old: ${this.recipe.servingSize} | new: ${values['servingsize']}`);
@@ -51,6 +51,7 @@ export class RecipeSkeletonComponent implements OnInit {
     });
     this.infrastructureService.setHeaderText(this.recipe.title);
   }
+
   toggleSelected(id: string) {
     let classList = document.getElementById(id).classList;
     if (classList.contains('selected')) {

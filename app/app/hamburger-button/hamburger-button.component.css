@@ -11,6 +11,7 @@
   transition: all 0.3s ease;
   padding: 2px;
   overflow: hidden;
+  margin-bottom: 10px;
 }
 
 .navbar div{
@@ -22,16 +23,16 @@
   transition: all 0.5s ease;
 }
 
-.navbar .first{
-  margin-top: 5%;
+ .first{
+  margin-top: 15%;
 }
 
 .navbar .second{
-  margin-top: 16%;
+  margin-top: 15%;
 }
 
 .navbar .third{
-  margin-top: 13%;
+  margin-top: 15%;
 }
 
 .navbar:hover .first {

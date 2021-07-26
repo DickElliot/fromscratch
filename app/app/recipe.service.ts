@@ -4,6 +4,7 @@ import { Subject, Observable, of, ReplaySubject, BehaviorSubject } from 'rxjs';
 import { catchError, map, tap, shareReplay, switchMap } from 'rxjs/operators';
 import { IRecipe, Recipe } from './recipe.model';
 import { ProductService } from './product.service';
+import { MatchingService } from './matching.service';
 import { InfrastructureService } from './infrastructure.service';
 import { Ingredient } from './ingredient.model';
 import { IPricedProduct, IProduct } from './IProduct';
@@ -19,31 +20,29 @@ export class RecipeService {
   recipeRestrictions: Subject<string[]> = new Subject<string[]>();
   recipesPriceRange: Subject<number[]> = new ReplaySubject<number[]>();
   private currentLocation: string;
-  private urlPrefix = '';
+  private urlPrefix = this.infrastructureService.getURLPrefix();
   private recipeRetrieverURL: string = `${this.urlPrefix}backend/recipeRetriever.php/?`
   private recipeMethodRetrieverURL: string = `${this.urlPrefix}backend/recipeMethodRetriever.php/?`;
   constructor(
     private http: HttpClient,
     private productService: ProductService,
     private infrastructureService: InfrastructureService,
+    private matchingService: MatchingService,
   ) {
-    // this.urlPrefix = this.infrastructureService.getURLPrefix();
+
     this.productService.currentLocation.subscribe((location: string) => {
       this.currentLocation = location;
       let exists: boolean = false;
       this.infrastructureService.checkIfCollectionExistsInMongoDB(this.currentLocation).toPromise().then((result) => exists = result).finally(() => {
         if (exists) {
-          // console.log(`Collection of recipe models for ${this.currentLocation} exists`);
           this.infrastructureService.downloadRecipeModels(this.currentLocation).subscribe((recipes: Recipe[]) => {
             this.updateCurrentRecipes(recipes);
           });
         } else {
-          // console.log(`Collection of recipes models for ${this.currentLocation} doesn't exist yet`);
           this.downloadRecipes();
         }
       });
     });
-    // this.recipeRestrictions.pipe(shareReplay(3));
   }
 
   updateCurrentRecipes(recipes: Recipe[]) {
@@ -58,7 +57,7 @@ export class RecipeService {
   setServingSizeRecipes(servingSize: number) {
     let updatedRecipes: Recipe[] = this.recipePool.slice();
     for (let i = 0; i < updatedRecipes.length; i++) {
-      if (servingSize.toString() != updatedRecipes[i].servingSize) {
+      if (servingSize.toString() !== updatedRecipes[i].servingSize) {
         updatedRecipes[i] = this.setServingSizeRecipe(servingSize, updatedRecipes[i]);
       }
     }
@@ -75,13 +74,10 @@ export class RecipeService {
 
   setServingSizeRecipe(servingSize: number, recipe: Recipe): Recipe {
     let modifier = servingSize / Number(recipe.servingSize);
-    let newIngredients = recipe.ingredients.slice();
-    for (let ingredient of newIngredients) {
+    for (let ingredient of recipe.ingredients) {
       let newQuantity = (Number(ingredient.quantity) * modifier).toPrecision(4);
-      let newIngredient: Ingredient = new Ingredient(ingredient.originalText, ingredient.recipe, newQuantity, ingredient.currentProduct, ingredient.matchedProducts);
-      Object.assign(ingredient, newIngredient);
+      ingredient.setNewQuantity = (newQuantity);
     }
-    recipe.ingredients = newIngredients;
     recipe = this.calculateRecipePriceFromIngredients(recipe);
     recipe.servingSize = servingSize.toString();
     return recipe;
@@ -102,12 +98,12 @@ export class RecipeService {
             newRecipe.servingSize = recipeData['servingsize'].match(/[\d]+/)[0];
             recipes.push(newRecipe);
           });
-          this.productService.currentProducts.toPromise().finally(() => {
-            this.turnRecipesDataIntoRecipeModels(recipes);
-          });
+          // this.productService.productsProcessed.toPromise().finally(() => {
+          console.log('promise broken')
+          this.turnRecipesDataIntoRecipeModels(recipes);
+          // });
           this.infrastructureService.recipeCount = this.recipeCount;
         }),
-        catchError(this.handleError<Recipe[]>('getRecipes')),
       ).subscribe();
   }
 
@@ -116,7 +112,7 @@ export class RecipeService {
     let unfinished = false;
     for (let i = 0; i < recipe.ingredients.length; i++) {
       recipe.ingredients[i].clearMatchedProducts();
-      recipe.ingredients[i] = this.productService.matchProductsToIngredientQuickly(recipe.ingredients[i]);
+      // recipe.ingredients[i] = this.matchingService.matchProducts(recipe.ingredients[i]);
       if (recipe.ingredients[i].currentProduct && Number(recipe.ingredients[i].currentProduct.purchasePrice)) {
         recipe.price += Number(recipe.ingredients[i].currentProduct.purchasePrice);
       }
@@ -141,14 +137,18 @@ export class RecipeService {
 
   private turnRecipesDataIntoRecipeModels(recipesData: Recipe[]) {
     let unMatchedRecipes: Recipe[] = [];
+    console.log(recipesData.length, 'recipe size');
     recipesData.forEach((recipe) => {
       let unfinished = false;
-      if (recipe.ingredients.length != recipe.getIngredientsText().length) {
+      if (recipe.ingredients.length !== recipe.getIngredientsText().length) {
         console.log(`text processing error for the ingredients of ${recipe.title}`);
       }
       for (let i = 0; i < recipe.ingredients.length; i++) {
         recipe.ingredients[i].clearMatchedProducts();
-        recipe.ingredients[i] = this.productService.matchProductsToIngredientUsing(recipe.ingredients[i]);
+        // console.log('we get here alright');
+        this.matchingService.matchProducts(recipe.ingredients[i]);
+        // matchedProducts.forEach((product) => recipe.ingredients[i].addToMatchedProducts(product));
+        // recipe.ingredients[i] = this.productService.matchProductsToIngredientUsing(recipe.ingredients[i]);
         if (recipe.ingredients[i].currentProduct && Number(recipe.ingredients[i].currentProduct.purchasePrice)) {
           recipe.price += Number(recipe.ingredients[i].currentProduct.purchasePrice);
         }
@@ -173,7 +173,6 @@ export class RecipeService {
   }
 
   setRecipeRestriction(restrictions: string[]) {
-    // console.log('recipe restrictions being updated to:', restrictions.toLocaleString());
     this.recipeRestrictions.next(restrictions);
   }
 
@@ -205,17 +204,16 @@ export class RecipeService {
     let updateRecipePricesDatabaseResult = this.http.post<any>('http://localhost/fromscratch/backend/recipePriceUpdater.php/', combinedArray);
     return updateRecipePricesDatabaseResult
       .pipe(
-        tap((stringResult: any) => this.log(`added StringResult = ${stringResult}`)),
-        catchError(this.handleError<any>("Failed to update Recipe prices in database"))
+        tap((stringResult: any) => console.log(`added StringResult = ${stringResult}`)),
       );
   }
 
   updateCurrentRecipeFromData(newRecipe: Recipe) {
-    this.productService.currentProducts.toPromise().then().finally(() => {
+    this.productService.productsProcessed.toPromise().then().finally(() => {
       let ingredients = this.getRecipeIngredients(newRecipe, newRecipe.getIngredientsText());
       newRecipe.ingredients = ingredients;
       for (let i = 0; i < newRecipe.ingredients.length; i++) {
-        newRecipe.ingredients[i] = this.productService.matchProductsToIngredientUsing(newRecipe.ingredients[i]);
+        this.matchingService.matchProducts(newRecipe.ingredients[i]);
       }
       newRecipe = this.calculateRecipePriceFromIngredients(newRecipe);
       newRecipe.price = Number(newRecipe.price.toPrecision(4));
@@ -224,13 +222,13 @@ export class RecipeService {
   }
 
   downloadRecipeMethod(recipeTitle: string): Observable<string[]> {
-    let titleURL = recipeTitle.replace(/ /gi, '+');
+    let titleURL = encodeURI(recipeTitle.replace(/ /gi, '+'));
     const url = `${this.recipeMethodRetrieverURL}${titleURL}`;
     return this.http.get<string>(url).pipe(
       map((result) => {
         let methodAsArray = result.toLocaleString().trim().split(/\[\[[\d]+\]\]/);
         let index = methodAsArray.indexOf('');
-        if (index != -1) {
+        if (index !== -1) {
           methodAsArray.splice(index, 1);
         }
         return methodAsArray;
@@ -249,8 +247,7 @@ export class RecipeService {
           newRecipe.servingSize = result['servingsize'].match(/[\d]+/)[0];
           return newRecipe;
         }),
-        tap(_ => this.log(`fetched recipe of title=${titleURL}`)),
-        catchError(this.handleError<Recipe>(`getRecipe title=${titleURL}`))
+        tap(_ => console.log(`fetched recipe of title=${titleURL}`)),
       );
   }
 
@@ -272,23 +269,6 @@ export class RecipeService {
       }
     }
     return recipe;
-  }
-
-  private handleError<T>(operation = 'operation', result?: T) {
-    return (error: any): Observable<T> => {
-
-      // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
-
-      // TODO: better job of transforming error for user consumption
-      console.log(`${operation} failed: ${error.message}`);
-
-      // Let the app keep running by returning an empty result.
-      return of(result as T);
-    };
-  }
-  private log(message: string) {
-    console.log(`RecipeService: ${message}`);
   }
 }
 

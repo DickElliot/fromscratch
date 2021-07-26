@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import 'ol/ol.css';
-import { IMarket } from '../IMarket';
+import { IMarket, toTitleCase } from '../IMarket';
 import { ICoordinates } from '../ICoordinates';
 import { ProductService } from '../product.service';
 import { supermarketMap } from './map.model';
@@ -17,7 +17,7 @@ import { InfrastructureService } from '../infrastructure.service';
  * they want to purchase the recipe ingredient products from.
  */
 export class SupermarketLocationComponent implements OnInit, AfterViewInit {
-  location: string = '';
+  location: string;
   latitude: string;
   longitude: string;
   geoLocation: ICoordinates;
@@ -36,7 +36,6 @@ export class SupermarketLocationComponent implements OnInit, AfterViewInit {
     this.map = new supermarketMap('newzealand_map');
     this.productService.downloadSupermarketsDetails().subscribe((res) => {
       res.forEach((market: IMarket) => {
-        // console.log('mn', market.name)
         this.supermarkets.push(market);
       });
       this.addSupermarketLocationsToMap(this.supermarkets);
@@ -47,7 +46,7 @@ export class SupermarketLocationComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Uses the browsers inbuilt tracker to get the location of the user
+   * Uses the browsers library to get the location of the user
    * so that the nearest supermarket can be chosen
    */
   getGeoLocation() {
@@ -80,10 +79,9 @@ export class SupermarketLocationComponent implements OnInit, AfterViewInit {
    * @param location supermarket title from map
    */
   updateSupermarketLocation(location: string) {
-    this.infrastructureService.setHeaderText(`from ${location}`);
-    let currentSupermarketInterface;
+    let currentSupermarketInterface: IMarket;
     for (let market of this.supermarkets) {
-      if (market.name == location.toLowerCase()) {
+      if (market.name == toTitleCase(location)) {
         currentSupermarketInterface = market;
       }
     }
@@ -104,9 +102,9 @@ export class SupermarketLocationComponent implements OnInit, AfterViewInit {
   }
 
   chooseSupermarketLocation() {
-    let location = document.getElementById('chosen').innerHTML.toLowerCase();
-    this.location = location;
-    this.productService.setCurrentLocation(location);
+    this.location = document.getElementById('chosen').innerHTML.toLowerCase();
+    this.infrastructureService.setHeaderText(`from ${this.location}`);
+    this.productService.setCurrentLocation(this.location);
   }
 
   /**

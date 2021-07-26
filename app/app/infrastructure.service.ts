@@ -112,12 +112,12 @@ export class InfrastructureService {
   }
 
   downloadRecipeImage(title: string): Observable<string> {
-    let titleURL = title.replace(/ /gi, '+');
+    let titleURL = encodeURI(title.replace(/ /gi, '+'));
     return this.http.get<string>(`${this.getURLPrefix()}${this.getImageURL}${titleURL}`);
   }
   getRecipeImage(title: string): string {
     // let urlPrefix = this.getURLPrefix();
-    let titleURL = title.replace(/ /gi, '+');
+    let titleURL = encodeURI(title.replace(/ /gi, '+'));
     return `${this.getURLPrefix()}images/recipe_images/${titleURL}.png`;
   }
 

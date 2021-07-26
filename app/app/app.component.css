@@ -3,9 +3,8 @@ header {
   background-color:  rgb(153, 4, 4);
   box-sizing: border-box;
   display: flex;
-   align-items:center;
+  align-items:center;
   justify-content: center;
-  
 }
 
 h1 {
@@ -16,12 +15,13 @@ h1 {
   padding: 0.5vw;
   color:black;
   margin: 0 5vw;
-  font-family: garamond;
+  font-family: aaargh;
   font-size: 5vmin;
   font-weight: bolder;
   cursor: pointer;
+  white-space: nowrap;
   flex-grow: 1;
-
+  overflow:hidden;
 }
 h1:hover{
   color: lightcoral;
@@ -31,6 +31,7 @@ h1:hover{
 #burger-button {
   box-sizing:border-box;
   height: 3vw;
+  width: 3vw;
   flex-basis: 3vw;
   margin: 0.5vw 5vw;
 }
@@ -59,9 +60,8 @@ h1:hover{
 }
 .open {
   width: 30vw;
-  max-width:200px;
+  max-width:80vw;
   min-width: fit-content;
-  width: moz-fit-content;
 }
 .closed {
   width: 0;
@@ -84,7 +84,7 @@ h1:hover{
 
 #shopping-list-bar {
   z-index: 2;
-  height: 100vw;
+  height: 100vh;
   top:0;
   right: 0;
   background-color:  #ff605b; 
@@ -93,6 +93,33 @@ h1:hover{
   transition: 0.5s;
   padding-top: 20px;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+#shopping-list-peek {
+  height: 100vh;
+  z-index: 0;
+  background-color:  #ff605b;
+  position: fixed;
+  top: 0;
+  right: 0;
+}
+
+.peek {
+  width: 3vw;
+  cursor: pointer;
+}
+
+
+.bought {
+  text-decoration: line-through;
+}
+
+.notbought {
+  text-decoration: normal;
+}
+
+.item-price {
+  float:right;
 }
 
 .shopping-list ul {
@@ -113,10 +140,30 @@ h1:hover{
   flex-direction: column;
 }
 
-.close-button:hover {
-  border: none;
+.recipe-list {
+  display: flex;
+  font-size: 0.7em;
+  flex-wrap: wrap;
+  max-width: 30vw;
+  max-height: 10vh;
+  overflow: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-#side-nav-bar a,  #shopping-list-bar a{
+.recipe-list::-webkit-scrollbar {
+  display: none;
+}
+
+.recipe-button {
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color:rgb(153,4,4);
+  width:fit-content;
+  padding: 0;
+  margin: 0;
+}
+
+#side-nav-bar a,  #shopping-list-bar a, .close-button {
   padding: 8px;
   text-decoration: none;
   font-size: 1.5em;
@@ -124,7 +171,9 @@ h1:hover{
   transition: 0.3s;
   display: inline-block;
 }
-
+.close-button:hover {
+  cursor: pointer;
+}
 #side-nav-bar a:hover, #shopping-list-bar a:hover {
   color:  rgba(252, 252, 252, 0.6);
   cursor: pointer;
@@ -140,3 +189,4 @@ h1:hover{
   #side-nav-bar {padding-top: 15px;}
   #side-nav-bar a {font-size: 18px;}
 }
+

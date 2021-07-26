@@ -1,7 +1,8 @@
 /* Global styles */
 @font-face {
   font-family: aaargh;
-  src: url("Aaargh.ttf");
+  src: local('Tahoma') url("Aaargh.ttf");
+  font-display: swap;
 }
 h1 {
     color: black;
@@ -27,5 +28,9 @@ html::-webkit-scrollbar {
 
 body {
 margin:0
+}
+
+@media (max-height: 550px) {
+  html {overflow-y: auto;}
 }
 

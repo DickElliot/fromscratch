@@ -12,21 +12,43 @@
     <a (click)="toggleOpen('list')">Shopping List</a>
     <a (click)="goTo('store-choice')">Store Choice</a>
   </div>
+  <div id="shopping-list-bar" [ngClass]=" shoppingListOpen ? 'open' : 'closed' ">
+    <div class="close-button" (click)="toggleOpen('list')">&times;</div>
+    <div class="recipe-list" *ngIf="shopList">
+      <div class="recipe-button" *ngFor="let recipe of shopList.recipes">
+        {{recipe.recipe}}|{{recipe.servings}}<span class="close-button"
+          (click)="shopList.removeRecipe(recipe)">&times;</span>
+      </div>
+    </div>
 
-  <div id="shopping-list-bar" [ngClass]="{ 'open': shoppingListOpen, 'closed': !shoppingListOpen }">
-    <a href="javascript:void(0)" class="close-button" (click)="toggleOpen('list')">&times;</a>
-    <ul class="shopping-list" *ngFor="let section of supermarketSections">
+    <div id="shopping-list-peek" (click)="toggleOpen('list')" [ngClass]=" listUpdated ? 'peek':'closed'">
+    </div>
+    <div *ngIf="shopList">
+      <ul class="shopping-list" *ngFor="let section of supermarketSections">
+        {{section}}
+        <div *ngFor="let item of shopList.items; let i = index">
+          <li id="{{i}}" class="shopping-list-item" *ngIf="item.supermarketSection === section">
+            <span *ngIf="item" [ngClass]="item.bought ? 'bought':'notbought'" (click)="buyItem(item.title)">
+              {{item.amount.toFixed(2)}} | {{item.title}}
+              <span [ngClass]="item.bought ? 'bought':'notbought'" class="item-price">{{item.price | currency}}</span>
+            </span>
+          </li>
+        </div>
+      </ul>
+    </div>
+
+
+    <!--     <ul class="shopping-list" *ngFor="let section of supermarketSections">
       {{ prettifySection(section) }}
       <div *ngFor="let ingredient of shoppingList | async; let i = index">
         <li id="{{i}}" class="shopping-list-item" *ngIf="ingredient.currentProduct.supermarketSection == section">
           <span *ngIf="ingredient" (click)="toggleSelected(i)">
             {{ingredient.currentProduct.purchaseAmount}} | {{ingredient.currentProduct.title}}
-            <!-- <span class="supermarketSectionText">{{ingredient.currentProduct.supermarketSection}} </span> -->
           </span>
         </li>
       </div>
-    </ul>
-    <span *ngIf="shoppingListPrice">{{shoppingListPrice | async | currency}}</span>
+    </ul> -->
+    <span *ngIf="shopList">{{shopList.price | currency}}</span><br>
   </div>
 
 </body>
