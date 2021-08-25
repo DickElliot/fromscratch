@@ -1,0 +1,85 @@
+.container {
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: 25fr 40fr 35fr;
+}
+
+h3 {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    font-family: aaargh;
+    display: flex;
+    width: 30vmin;
+    height: 100%;
+    justify-content: center;
+}
+.show-title {
+    font-size: 1em;
+    align-items:center;
+    grid-area: 1 / 1 / 4 / 2;
+}
+.hide-title {
+    overflow: hidden;
+    grid-area: 1 / 1 / 2 / 2;
+}
+
+.recipe-details-container {
+    display: grid;
+    grid-template-columns: 33fr 33fr 33fr;
+    grid-template-rows: auto;
+    font-family: Libre Franklin;
+    font-weight: bold;
+    background-color: rgba(87, 87, 87, 0.767);
+}
+.recipe-time {
+    grid-area: 1 / 1 / 2 / 2;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display:flex;
+    font-size: 1em;
+    align-items: center;
+    justify-content: center;
+}
+
+.recipe-price {
+    grid-area: 1 / 2 / 2 / 3;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    color: gold;
+}
+.change {
+    font-size: 0.4em;
+    color:gold;
+}
+.recipe-servingsize {
+    grid-area: 1 / 3 / 2 / 4;
+    color: white;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background-size: contain;
+    background-position: center;
+    font-size: 1em;
+    background-repeat: no-repeat;
+}
+
+.recipe-diet {
+    grid-area: 3 / 1 / 4 / 2;
+    overflow: hidden;
+    display: flex;
+    /* justify-content: flex-start;  */
+}
+.diet-image {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100%;
+    width: 100%;
+}

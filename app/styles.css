@@ -1,13 +1,13 @@
 /* Global styles */
 @font-face {
-  font-family: aaargh;
-  src: local('Tahoma') url("Aaargh.ttf");
-  font-display: swap;
+  font-family: 'aaargh';
+  src:  url("Aaargh.ttf");
+  /* font-display: block; */
 }
 h1 {
-    color: black;
-    font-size: 250%;
-    font-family: Arial, Helvetica, sans-serif;
+  color: black;
+  font-size: 250%;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 html {
@@ -16,7 +16,7 @@ html {
   width: 100vw;
   box-sizing: border-box;
   height: 100vh;
-  overflow-x:hidden;
+  overflow-x: hidden;
   overflow-y: scroll;
   -ms-overflow-style: none;
   scrollbar-width:none;
@@ -27,7 +27,7 @@ html::-webkit-scrollbar {
 }
 
 body {
-margin:0
+  margin:0;
 }
 
 @media (max-height: 550px) {

@@ -36,18 +36,6 @@
         </div>
       </ul>
     </div>
-
-
-    <!--     <ul class="shopping-list" *ngFor="let section of supermarketSections">
-      {{ prettifySection(section) }}
-      <div *ngFor="let ingredient of shoppingList | async; let i = index">
-        <li id="{{i}}" class="shopping-list-item" *ngIf="ingredient.currentProduct.supermarketSection == section">
-          <span *ngIf="ingredient" (click)="toggleSelected(i)">
-            {{ingredient.currentProduct.purchaseAmount}} | {{ingredient.currentProduct.title}}
-          </span>
-        </li>
-      </div>
-    </ul> -->
     <span *ngIf="shopList">{{shopList.price | currency}}</span><br>
   </div>
 

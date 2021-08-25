@@ -1,9 +1,0 @@
-<div class="tier-title">
-  <h3>${{tier[0]}} - ${{tier[1]}}</h3>
-</div>
-<div class="recipe-card-row">
-  <div *ngFor="let recipe of recipes$ | async" id="{{recipe.title}}-card">
-    <app-recipe-title class="recipe-card" [recipe]="recipe" (click)="recipeWasChosen(recipe)">
-    </app-recipe-title>
-  </div>
-</div>

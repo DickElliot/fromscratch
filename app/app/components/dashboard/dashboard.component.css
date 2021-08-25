@@ -1,0 +1,35 @@
+#priceTiers {
+  height: 90vh;
+  box-sizing: content-box;
+}
+.tiers {
+  height:24%;
+  min-height: 100px;
+  box-sizing: border-box;
+}
+
+#loading-container {
+  box-sizing: border-box;
+  width: 100vw;
+  height: 50vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#loading {
+  border-radius: 5px;
+  width: 200px;
+  font-size: 2rem;
+  padding: 20px;
+  max-width: 100%;
+  text-align:center;
+  background-color: rgba(255,255,255,0.9);
+  border: 2px solid black;
+}
+
+@media (max-height: 450px) {
+  .tiers {
+    margin-bottom: 5px;
+  }
+}

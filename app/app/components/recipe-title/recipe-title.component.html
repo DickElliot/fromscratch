@@ -1,0 +1,13 @@
+<div class="container" (click)="chooseRecipe()" (mouseenter)="toggleDetails()" (mouseleave)="toggleDetails()">
+  <h3 [ngClass]="{ 'show-title': !showDetails, 'hide-title': showDetails }">{{recipe.title}}</h3>
+  <div class="recipe-details-container" *ngIf="showDetails">
+    <span class="recipe-time" [ngStyle]="{ 'background-image': getClockImageUrl() }">{{recipe.totalCookTime}}m</span>
+    <span class="recipe-price">${{dollars}}<span class="change">.{{cents}}</span></span>
+    <span class="recipe-servingsize"
+      [ngStyle]="{ 'background-image': getServingSizeImageUrl() }">{{recipe.servingSize}}</span>
+  </div>
+  <div class="recipe-diet" *ngIf="showDetails">
+    <span class="diet-image" *ngFor="let diet of diets"
+      [ngStyle]="{ 'background-image': getDietImageUrl(diet) }"></span>
+  </div>
+</div>

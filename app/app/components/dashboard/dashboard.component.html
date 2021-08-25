@@ -1,0 +1,12 @@
+<app-filter id="filter"></app-filter>
+<div *ngIf="loading" id="loading-container">
+  <div class="loading-text" (@loadingChange.done)="animateLoading($event)" [@loadingChange]="{value: loadingState}"
+    id="loading">fetching recipes...
+  </div>
+</div>
+<div id="priceTiers" *ngIf="priceTiers">
+  <div class="tiers" *ngFor="let tier of priceTiers | async">
+    <app-price-tier [tier]="tier" (loading)="setLoading($event)">
+    </app-price-tier>
+  </div>
+</div>

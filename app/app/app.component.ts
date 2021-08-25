@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { InfrastructureService } from './infrastructure.service';
-import { ShoppingListService } from './shopping-list.service';
-import { ShoppingList } from './shopping-list';
+import { UtilitiesService } from './services/utilities.service';
+import { ShoppingListService } from './services/shopping-list.service';
+import { ShoppingList } from './classes/ShoppingList';
 import { Router } from '@angular/router';
-
 
 
 @Component({
@@ -24,14 +23,14 @@ export class AppComponent implements OnInit {
   supermarketSections: string[] = ['Fruit and Veg', 'Pantry', 'Fridge and Deli', 'Meat and Seafood'];
   constructor(
     // private productService: ProductService,
-    private infrastructureService: InfrastructureService,
+    private UtilitiesService: UtilitiesService,
     private router: Router,
     private listService: ShoppingListService,
   ) {
   }
   ngOnInit(): void {
     this.shopList = this.listService.shoppingListObject;
-    this.headerText = this.infrastructureService.headerText;
+    this.headerText = this.UtilitiesService.headerText;
     this.listService.productsUpdated.subscribe((updated) => { this.listUpdated = updated });
   }
 
@@ -61,18 +60,18 @@ export class AppComponent implements OnInit {
   }
 
   showTitle(): void {
-    this.infrastructureService.setHeaderText(this.currentPageHeaderText);
+    this.UtilitiesService.setHeaderText(this.currentPageHeaderText);
   }
 
   showLocation(): void {
     this.currentPageHeaderText = document.getElementsByTagName('h1')[0].innerText;
-    this.infrastructureService.setHeaderText('from scratch');
+    this.UtilitiesService.setHeaderText('from scratch');
   }
 
   goTo(location: string) {
     this.toggleOpen('nav');
     if (location === '') {
-      this.infrastructureService.setHeaderText('from scratch');
+      this.UtilitiesService.setHeaderText('from scratch');
     }
     this.router.navigate([`/${location}`], { skipLocationChange: true });
   }
