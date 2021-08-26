@@ -1,11 +1,11 @@
 <div *ngIf="times" id="timer-component">
-    <div class="timer-container" *ngFor="let time of times; let i = index">
-        <div class="timer-face" [status]="status[i]" [counter]="time" (value)="intoTime(i, $event)">{{
-            currentTimes[i] | time}}</div>
-        <div class="timer-controls">
-            <div class="start button" (click)="start(i)">Start</div>
-            <div class="pause button" (click)="pause(i)">Pause</div>
-            <div class="reset button" (click)="reset(i)">Reset</div>
-        </div>
+  <div class="timer-container" *ngFor="let time of times; let i = index">
+    <div class="timer-face" [status]="status[i]" [counter]="time" (value)="intoTime(i, $event)">{{
+      currentTimes[i] | time}}</div>
+    <div class="timer-controls">
+      <div class="start button" (click)="start(i)">Start</div>
+      <div class="pause button" (click)="pause(i)">Pause</div>
+      <div class="reset button" (click)="reset(i)">Reset</div>
     </div>
+  </div>
 </div>

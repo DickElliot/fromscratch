@@ -8,6 +8,7 @@ import { MatchingService } from '../services/matching.service';
 import { UtilitiesService } from '../services/utilities.service';
 import { Ingredient } from '../classes/IIngredient';
 
+
 @Injectable({
   providedIn: 'root',
 })
@@ -46,10 +47,9 @@ export class RecipeService {
 
   updateCurrentRecipes(recipes: Recipe[]) {
     let sortedRecipes = recipes.sort((a, b) => a.price - b.price);
-    this.recipesPriceRange.next([sortedRecipes[0].price, sortedRecipes[sortedRecipes.length - 1].price]);
+    this.recipesPriceRange.next([sortedRecipes[0].price, sortedRecipes[sortedRecipes.length - 2].price]);
     this.UtilitiesService.setTierValues(sortedRecipes);
     this.recipePool = recipes.slice();
-    // this.currentRecipes = of(sortedRecipes);
     this.currentRecipes.next(sortedRecipes);
   }
 
@@ -102,34 +102,6 @@ export class RecipeService {
       ).subscribe();
   }
 
-  private turnRecipeDataIntoRecipeModel(recipe: Recipe) {
-    let unMatchedRecipes: Recipe[] = [];
-    let unfinished = false;
-    for (let i = 0; i < recipe.ingredients.length; i++) {
-      recipe.ingredients[i].clearMatchedProducts();
-      // recipe.ingredients[i] = this.matchingService.matchProducts(recipe.ingredients[i]);
-      if (recipe.ingredients[i].currentProduct && Number(recipe.ingredients[i].currentProduct.purchasePrice)) {
-        recipe.price += Number(recipe.ingredients[i].currentProduct.purchasePrice);
-      }
-      if (recipe.ingredients[i].currentProduct == null) {
-        unfinished = true;
-      }
-    }
-    this.UtilitiesService.setPercentageOfRecipePriced(Math.ceil((this.recipePool.length / this.recipeCount) * 100));
-    recipe.price = Number(recipe.price.toPrecision(4));
-    if (unfinished == true) {
-      unMatchedRecipes.push(recipe);
-    }
-    this.recipePool.push(recipe);
-    this.addToCurrentRecipes();
-  }
-
-  private addToCurrentRecipes() {
-    if (this.recipePool.length == this.recipeCount) {
-      this.updateCurrentRecipes(this.recipePool);
-    }
-  }
-
   private turnRecipesDataIntoRecipeModels(recipesData: Recipe[]) {
     let unMatchedRecipes: Recipe[] = [];
     recipesData.forEach((recipe) => {
@@ -144,9 +116,8 @@ export class RecipeService {
           unfinished = true;
         }
       }
-      this.UtilitiesService.setPercentageOfRecipePriced(Math.ceil((recipesData.indexOf(recipe) / recipesData.length) * 100));
       recipe.price = Number(recipe.price.toPrecision(4));
-      if (unfinished == true) {
+      if (unfinished === true) {
         unMatchedRecipes.push(recipe);
       }
     });
@@ -174,39 +145,6 @@ export class RecipeService {
     );
   }
 
-  updateRecipePricesDatabase(ids: string[], prices: string[]): Observable<string> {
-    let location = [];
-    let currentLocation: string;
-    this.productService.currentLocation.subscribe((location) => currentLocation = location);
-    let databaseLocation = currentLocation.trim().replace(" ", "_").toLowerCase();
-    for (let index = 0; index < ids.length; index++) {
-      location.push(databaseLocation);
-    }
-    let combinedArray = {
-      ids,
-      prices,
-      location
-    };
-    let updateRecipePricesDatabaseResult = this.http.post<any>('http://localhost/fromscratch/backend/recipePriceUpdater.php/', combinedArray);
-    return updateRecipePricesDatabaseResult
-      .pipe(
-        tap((stringResult: any) => console.log(`added StringResult = ${stringResult}`)),
-      );
-  }
-
-  updateCurrentRecipeFromData(newRecipe: Recipe) {
-    this.productService.productsProcessed.toPromise().then().finally(() => {
-      let ingredients = this.getRecipeIngredients(newRecipe, newRecipe.getIngredientsText());
-      newRecipe.ingredients = ingredients;
-      for (let i = 0; i < newRecipe.ingredients.length; i++) {
-        this.matchingService.matchProducts(newRecipe.ingredients[i]);
-      }
-      newRecipe = this.calculateRecipePriceFromIngredients(newRecipe);
-      newRecipe.price = Number(newRecipe.price.toPrecision(4));
-      this.currentRecipe.next(newRecipe);
-    });
-  }
-
   downloadRecipeMethod(recipeTitle: string): Observable<string[]> {
     let titleURL = encodeURI(recipeTitle.replace(/ /gi, '+'));
     const url = `${this.recipeMethodRetrieverURL}${titleURL}`;
@@ -219,22 +157,6 @@ export class RecipeService {
         }
         return methodAsArray;
       }));
-  }
-
-  downloadRecipe(recipeTitle: string): Observable<Recipe> {
-    let titleURL = recipeTitle.replace(/ /gi, '+');
-    const url = `${this.recipeRetrieverURL}${titleURL}`;
-    return this.http.get<Recipe>(url)
-      .pipe(
-        map(result => {
-          let newRecipe: Recipe = new Recipe(result);
-          newRecipe.totalCookTime = newRecipe.getTotalCookTimeInMinutes();
-          newRecipe.diet = result['diet'];
-          newRecipe.servingSize = result['servingsize'].match(/[\d]+/)[0];
-          return newRecipe;
-        }),
-        tap(_ => console.log(`fetched recipe of title=${titleURL}`)),
-      );
   }
 
   getRecipeIngredients(recipe: Recipe, ingredientsText: string[]): Ingredient[] {

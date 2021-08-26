@@ -47,7 +47,6 @@ export class RecipeProductsComponent implements OnInit {
    * the current recipe. 
    */
   ngOnInit(): void {
-    console.log('recipe-products component');
     this.createProductList();
     for (let i = 0; i < this.recipe.ingredients.length; i++) {
       this.ingredientFormGroup.addControl(i.toString(), this.formBuilder.control('', [Validators.required]));
@@ -85,7 +84,6 @@ export class RecipeProductsComponent implements OnInit {
     this.productList = [];
     for (let ingredient of this.recipe.ingredients) {
       if (ingredient.currentProduct) {
-        console.log('createProductList');
         this.productList.push(ingredient);
         this.shoppingListPrice += Number(ingredient.currentProduct.purchasePrice);
       }
@@ -98,7 +96,6 @@ export class RecipeProductsComponent implements OnInit {
    * shopping list menu
    */
   addToShoppingList(): void {
-    console.log('Product component addToShoppingList');
     let products: PricedProduct[] = [];
     this.productList.forEach((ingredient) => {
       products.push(ingredient.currentProduct);

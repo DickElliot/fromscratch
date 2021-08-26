@@ -32,14 +32,6 @@ export interface IProductDataAll {
   subsection: string;
 }
 
-// export interface IProductData {
-//   title: string;
-//   unit: string;
-//   price: number;
-//   volumeSize: string;
-//   section: string
-// }
-
 export interface IProduct {
   id?: number;
   title: string;
@@ -171,35 +163,56 @@ export class Product implements IProduct {
   }
 }
 
+export enum approxWeight {
+  onion = 150,
+  banana = 120,
+  potato = 120,
+  pumpkin = 600,
+  shallots = 80,
+  'garlic cloves' = 10,
+  garlic = 70,
+  'red onion' = 150,
+  mushrooms = 50,
+  avocado = 120,
+  eggplant = 150,
+  'ball of moz' = 200,
+  broccoli = 100,
+  cabbage = 900,
+  beetroot = 200,
+  lemon = 100,
+  carrots = 80,
+
+}
+
 export class PricedProduct extends Product implements IPricedProduct {
   // accepts: { [key: string]: number };
   purchaseAmount: number;
   purchasePrice: number;
-  private approxWeight: { [key: string]: number } = {
-    onion: 150,
-    banana: 120,
-    potato: 120,
-    pumpkin: 600,
-    shallots: 80,
-    'garlic cloves': 10,
-    garlic: 70,
-    'red onion': 150,
-    mushrooms: 50,
-    avocado: 120,
-    eggplant: 150,
-    'ball of moz': 200,
-    broccoli: 100,
-    cabbage: 900,
-    beetroot: 200,
-    lemon: 100,
-    carrots: 80,
-  };
+  /*   private approxWeight: { [key: string]: number } = {
+      onion: 150,
+      banana: 120,
+      potato: 120,
+      pumpkin: 600,
+      shallots: 80,
+      'garlic cloves': 10,
+      garlic: 70,
+      'red onion': 150,
+      mushrooms: 50,
+      avocado: 120,
+      eggplant: 150,
+      'ball of moz': 200,
+      broccoli: 100,
+      cabbage: 900,
+      beetroot: 200,
+      lemon: 100,
+      carrots: 80,
+    }; */
   constructor(IProduct: IProduct) {
     super(IProduct);
     if (this.isVariable()) {
-      for (let key of Object.keys(this.approxWeight)) {
+      for (let key of Object.keys(approxWeight)) {
         if (this.title.toLowerCase().includes(key)) {
-          this.quantity = this.approxWeight[key];
+          this.quantity = approxWeight[key];
           break;
         }
       }
@@ -244,7 +257,6 @@ export class PricedProduct extends Product implements IPricedProduct {
   // 2) Allow changing quantity of product without declaring new variables (or taking a lot of resources)
   // 3) Allow setting of product amount & price painless & more in line with OO practices with no class-external meddling
   purchase(amount: IAmount) {
-
     const unitConversion: { [key: string]: number } = {
       tsp: 3.5, tbsp: 14, dessertspoon: 20,
       bunch: 1, small: 1,
@@ -266,13 +278,12 @@ export class PricedProduct extends Product implements IPricedProduct {
         if (this.purchaseUnit === purchaseUnit.whole) {
           purchaseAmount = Math.ceil(amount.quantity / this.quantity);
           this.setAmountInUnits(purchaseAmount);
-
         }
         if (this.purchaseUnit === purchaseUnit.weight) {
           let approxAmount = 0;
-          for (let key of Object.keys(this.approxWeight)) {
+          for (let key of Object.keys(approxWeight)) {
             if (this.title.toLowerCase().includes(key)) {
-              approxAmount = this.approxWeight[key];
+              approxAmount = approxWeight[key];
               break;
             }
           }

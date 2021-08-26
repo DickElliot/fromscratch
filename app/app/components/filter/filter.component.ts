@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 // Angular
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -5,8 +6,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { debounceTime, take } from 'rxjs/operators';
 // Services
 import { RecipeService } from '../../services/recipe.service';
-import { ProductService } from '../../services/product.service';
 import { UtilitiesService } from '../../services/utilities.service';
+
 
 @Component({
   selector: 'app-filter',
@@ -20,23 +21,20 @@ import { UtilitiesService } from '../../services/utilities.service';
  */
 export class FilterComponent implements OnInit {
   dietForm: FormGroup;
-  priceRangeForm: FormGroup;
   servingSizeForm: FormGroup;
-
-  // Dummy values in price range for form initialization
-  priceRange: number[] = [1, 120];
-  minMax: number;
-  priceRangeSelection: number[] = [1, 120];
-  show: boolean = false;
-  dietRestrictionSelection: string[] = ['', '', ''];
+  private currentPriceRange: Subject<number[]> = new Subject<number[]>();
+  priceRange: number[] = [];
+  ready: boolean = false;
   private servingSizeSelection: string[] = [];
-  // Options for the dietary restriction section of the form, to allow efficient checking
-  private dietRestrictionOptions: string[] = ['Vegetarian', 'Vegan', 'GlutenFree'];
+  private dietRestrictions = {
+    Vegetarian: false,
+    Vegan: false,
+    GlutenFree: false,
+  }
   supermarketLocation: string = '';
   urlPrefix = '';
   constructor(
     private recipeService: RecipeService,
-    private productService: ProductService,
     private UtilitiesService: UtilitiesService,
     formBuilder: FormBuilder
   ) {
@@ -46,60 +44,42 @@ export class FilterComponent implements OnInit {
       Vegan: [false],
       GlutenFree: [false]
     });
-    this.priceRangeForm = formBuilder.group({
-      // priceFloor: [this.priceRange[0]],
-      // priceCeiling: [this.priceRange[1]],
-    })
     this.servingSizeForm = formBuilder.group({
       servingSize: [, { validators: [Validators.pattern(/\d+/)] }],
     });
-
   }
   /**
    * Initialization, records filter form results and corresponding affect
    * from their effect on recipes.
    */
   ngOnInit(): void {
+    this.currentPriceRange.pipe(debounceTime(100)).subscribe((range) => {
+      this.recipeService.setPriceRange(range);
+    });
     this.recipeService.recipesPriceRange.pipe(take(1)).subscribe((range) => {
-      this.priceRange, this.priceRangeSelection = range;
-      this.minMax = (this.priceRange[1] + this.priceRange[0]) / 2;
-      this.priceRangeForm.setValue({ priceFloor: range[0], priceCeiling: range[1] });
+      this.priceRange = [Math.floor(range[0]), Math.ceil(range[1])];
+      this.ready = true;
     });
-    // Includes shortcut & reminder of supermarket location
-    this.productService.currentLocation.subscribe((location) => {
-      this.supermarketLocation = location;
-    });
-
     this.dietForm.valueChanges.subscribe((result) => {
-      let newDietOptions: string[] = [];
-      for (let restriction of this.dietRestrictionOptions) {
-        if (result[restriction]) {
-          newDietOptions.push(restriction);
+      let newDietRestrictions: string[] = []
+      for (let key in result) {
+        if (this.dietRestrictions[key] !== result[key]) {
+          newDietRestrictions.push(key);
+          this.dietRestrictions[key] = result[key];
         }
       }
-      if (newDietOptions != this.dietRestrictionSelection) {
-        this.dietRestrictionSelection = newDietOptions;
-        this.recipeService.recipeRestrictions.next(this.dietRestrictionSelection);
+      if (newDietRestrictions.length > 0) {
+        this.recipeService.recipeRestrictions.next(newDietRestrictions);
       }
     });
-    // Debounce to stop data flooding
-    this.priceRangeForm.valueChanges.pipe(debounceTime(500)).subscribe((result) => {
-      if (result['priceFloor'] != this.priceRangeSelection[0] || result['priceCeiling'] != this.priceRangeSelection[1]) {
-        if (result['priceCeiling'] > result['priceFloor']) {
-          this.priceRangeSelection = [result['priceFloor'], result['priceCeiling']];
-          this.recipeService.setPriceRange(this.priceRangeSelection);
-        }
-      }
-    });
-
     this.servingSizeForm.valueChanges.pipe(debounceTime(500)).subscribe((result) => {
-      if (result['servingSize'] != this.servingSizeSelection) {
-        console.log(`New serving size of ${result['servingSize']}`);
+      if (result['servingSize'] !== this.servingSizeSelection) {
         this.servingSizeSelection = result['servingSize'];
         this.recipeService.setServingSizeRecipes(Number(this.servingSizeSelection));
       }
     });
   }
+
   /**
    * Uses CSS styling to expand the filter on hover
    */
@@ -107,7 +87,7 @@ export class FilterComponent implements OnInit {
     let filterContainer: HTMLElement = document.getElementById('filter-container');
     let filterForm: HTMLElement = document.getElementById('filter-content');
     const filterText: HTMLElement = document.getElementById('filter-icon');
-    if (filterContainer.style.height == '3vh') {
+    if (filterContainer.style.height === '3vh') {
       filterText.style.display = 'none';
       filterContainer.style.height = 'min-content';
       filterContainer.style.height = '-moz-min-content';
@@ -119,7 +99,8 @@ export class FilterComponent implements OnInit {
     }
   }
 
-  updatePriceRange(value: string) {
-    console.log(`new value: ${value}`);
+  onPriceRangeChange($event) {
+    this.currentPriceRange.next($event);
   }
+
 }

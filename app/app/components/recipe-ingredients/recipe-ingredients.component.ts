@@ -5,6 +5,7 @@ import { Recipe } from "../../classes/IRecipe";
 // Services
 import { RecipeService } from '../../services/recipe.service';
 
+
 @Component({
   selector: "app-recipe-ingredients",
   templateUrl: "./recipe-ingredients.component.html",

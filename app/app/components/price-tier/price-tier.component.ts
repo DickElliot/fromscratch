@@ -10,9 +10,6 @@ import { Recipe } from '../../classes/IRecipe';
 import { RecipeService } from '../../services/recipe.service';
 
 
-
-
-
 @Component({
   selector: 'app-price-tier',
   templateUrl: './price-tier.component.html',
@@ -46,7 +43,6 @@ export class PriceTierComponent implements OnInit {
    * altering between hiding & showing.
    */
   ngOnInit(): void {
-    // this.recipeService.getRecipesWithinTier(this.tier).pipe(take(1), tap((x) => console.log(`recipes being updated`))).subscribe((recipes) => this.recipes$ = of(recipes));
     this.recipes$ = this.recipeService.getRecipesWithinTier(this.tier).pipe(
       switchMap((recipes: Recipe[]) => {
         return merge(

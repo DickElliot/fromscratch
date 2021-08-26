@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject, BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { Recipe } from '../classes/IRecipe';
 import { Router } from '@angular/router';
 
@@ -9,9 +8,7 @@ import { Router } from '@angular/router';
 @Injectable({
   providedIn: 'root'
 })
-
 export class UtilitiesService {
-  private percentageOfRecipesPriced: Subject<number> = new Subject<number>();
   public headerText: Subject<string> = new BehaviorSubject<string>('from scratch');
   private recipePriceTiers: ReplaySubject<number[][]> = new ReplaySubject<number[][]>();
   private urlPrefix = this.getURLPrefix();
@@ -19,14 +16,13 @@ export class UtilitiesService {
   private recipeModelDatabaseCheckURL: string = `${this.urlPrefix}backend/recipeModelDatabaseCheck.php/?`;
   private getImageURL: string = `${this.urlPrefix}backend/getImage.php/?`;
   recipeCount: number;
-  itemObs: Observable<number>;
   constructor(private http: HttpClient,
     private router: Router,
   ) { }
 
   /**
-   * 
-   * @returns the address for the backend & images
+   * For switching between build & production
+   * @returns url for back-end resources
    */
   getURLPrefix(): string {
     // server
@@ -42,10 +38,9 @@ export class UtilitiesService {
    */
   downloadRecipeModels(supermarket: string): Observable<Recipe[]> {
     let url = `${this.recipeModelDatabaseURL}${supermarket}`;
-    return this.http.get<Recipe[]>(url).pipe(tap((result: any) => {
-      this.setPercentageOfRecipePriced(100);
-    }));
+    return this.http.get<Recipe[]>(url);
   }
+
   /**
    * Checks if supermarket collection exists
    * @param supermarket current supermarket location
@@ -55,57 +50,44 @@ export class UtilitiesService {
     let url = `${this.recipeModelDatabaseCheckURL}${supermarketURL}`;
     return this.http.get<boolean>(url);
   }
+
   /**
    * Uploads recipe models to supermarket
    * @param supermarket current supermarket location
    * @param recipes recipe models to upload
    */
   uploadRecipeModels(supermarket: string, recipes: Recipe[]): Observable<string> {
-    // console.log('uploading new recipe models')
     let supermarketURL = supermarket.replace(/ /gi, '_');
     let url = `${this.recipeModelDatabaseURL}${supermarketURL}`;
     return this.http.post<any>(url, recipes);
   }
-  getPercentageOfRecipesPricedString(): number {
-    let percentage: number;
-    this.percentageOfRecipesPriced.subscribe((value) => percentage = value);
-    return percentage;
-  }
-  getPercentageOfRecipesPriced(): Observable<number> {
-    return this.percentageOfRecipesPriced.pipe();
-  }
-  setPercentageOfRecipePriced(percentage: number) {
-    this.percentageOfRecipesPriced.next(percentage);
-  }
+
   setHeaderText(newText: string) {
     this.headerText.next(newText);
   }
+
   getHeaderText(): Observable<string> {
     return this.headerText;
   }
+
   getTierValues(): ReplaySubject<number[][]> {
     return this.recipePriceTiers;
   }
+
   setTierValues(recipes: Recipe[]) {
-    let recipeCount = recipes.length;
-    let quarterCount = Math.floor(recipeCount / 4);
-    let tierMarks: number[] = [];
+    let quarterCount = Math.floor(recipes.length / 4);
+    let tierRanges: number[] = [];
     for (let i = 0; i < recipes.length; i += quarterCount) {
-      let t = recipes[i].price;
-      tierMarks.push(t);
+      tierRanges.push(recipes[i].price);
     }
-    let newTiers: number[][] = [];
+    let tiers: number[][] = [];
     for (let i = 0; i < 4; i++ * 2) {
-      let tier: number[] = [Math.floor(tierMarks[i]), Math.floor(tierMarks[i + 1])];
-      newTiers.push(tier);
+      tiers.push([Math.floor(tierRanges[i]), Math.floor(tierRanges[i + 1])]);
     }
-    newTiers[3][1] = newTiers[3][1] + 1;
-    // console.log('newTiers[3][1]', newTiers[3][1].toString(), newTiers[3][1].toLocaleString());
-    if (Number.isNaN(newTiers[3][1])) {
-      newTiers[3][1] = newTiers[3][0] + newTiers[1][0];
-    }
-    this.recipePriceTiers.next(newTiers);
+    tiers[3][1] = Math.floor(recipes[recipes.length - 2].price) + 1;
+    this.recipePriceTiers.next(tiers);
   }
+
   setTvRemoteRules() {
     let priceTiers: number[][];
     this.recipePriceTiers.subscribe((tiers) => priceTiers = tiers);
@@ -116,7 +98,6 @@ export class UtilitiesService {
     return this.http.get<string>(`${this.getURLPrefix()}${this.getImageURL}${titleURL}`);
   }
   getRecipeImage(title: string): string {
-    // let urlPrefix = this.getURLPrefix();
     let titleURL = encodeURI(title.replace(/ /gi, '+'));
     return `${this.getURLPrefix()}images/recipe_images/${titleURL}.png`;
   }

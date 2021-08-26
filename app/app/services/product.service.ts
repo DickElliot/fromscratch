@@ -12,7 +12,6 @@ import { MatchingService } from '../services/matching.service';
 @Injectable({
   providedIn: 'root',
 })
-
 export class ProductService {
   products: Observable<IProduct[]> = new Observable<IProduct[]>();
   productsProcessed: Subject<boolean> = new Subject<boolean>();
@@ -31,10 +30,7 @@ export class ProductService {
   private supermarketsDetailsRetrieverURL: string = `${this.urlPrefix}backend/supermarketsDetailsRetriever.php`;
   constructor(private http: HttpClient, private matchingService: MatchingService) {
     this.currentLocation.pipe(shareReplay(3)).subscribe((location: string) => {
-      console.log(`Product Service location updated to ${location}`);
       this.location = location;
-      // Have this subscription act on the downloadProducts subscription so that 
-      // it is triggered when the location is changed.
       this.downloadProducts().subscribe((products: IProduct[]) => {
         this.matchingService.setProducts(products);
         this.productsProcessed.next(true);
@@ -100,7 +96,6 @@ export class ProductService {
    * @param position GeoLocation Position
    */
   showPosition(position) {
-    let longitude = position.coords.longitude;
     let geoLocation: ICoordinates = { longitude: position.coords.longitude, latitude: position.coords.latitude };
     this.geoLocation = geoLocation;
   }

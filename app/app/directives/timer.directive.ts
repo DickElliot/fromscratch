@@ -15,7 +15,7 @@ export class TimerDirective implements OnChanges, OnDestroy {
   @Input() status: string;
   @Input() counter: number;
   @Output() value = new EventEmitter<number>();
-  pr
+
   constructor() {
     this.subscription = this.timerSource.pipe(
       switchMap(({ count, interval }) =>

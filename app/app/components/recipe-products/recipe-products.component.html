@@ -6,7 +6,7 @@
     <ul *ngIf="productList" id="productList">
       <li *ngFor="let ingredient of productList; let i = index" class="productList-item">
         <select formControlName="{{i}}">
-          <option value="">{{ingredient.currentProduct.purchaseAmount}} of
+          <option value="">{{ingredient.currentProduct.purchaseAmount}}{{ingredient.currentProduct.unit}} of
             {{ingredient.currentProduct.title}} | {{ingredient.currentProduct.purchasePrice | currency}}</option>
           <option class="productText" *ngFor="let product of ingredient.matchedProducts" [ngValue]="product">
             <span class="productTextPurchaseAmount">{{product.purchaseAmount}} of </span><span

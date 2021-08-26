@@ -3,6 +3,8 @@ import { Matcher } from '../classes/Matcher';
 import { IProduct } from '../classes/IProduct';
 import { Ingredient } from '../classes/IIngredient';
 import { Recipe } from '../classes/IRecipe';
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -11,7 +13,6 @@ export class MatchingService {
   constructor() { }
 
   setProducts(products: IProduct[]) {
-    // products.forEach((product) => console.log(product["volumeSize"]));
     this.matcher = new Matcher(products);
   }
 

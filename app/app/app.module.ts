@@ -19,6 +19,7 @@ import { RecipePriceComponent } from './components/recipe-price/recipe-price.com
 import { TimerComponent } from './components/timer/timer.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { HamburgerButtonComponent } from './components/hamburger-button/hamburger-button.component';
+import { MultiSliderComponent } from './components/multi-slider/multi-slider.component';
 // Services
 import { RecipeService } from './services/recipe.service';
 import { ProductService } from './services/product.service';
@@ -27,6 +28,9 @@ import { UtilitiesService } from './services/utilities.service';
 import { TimerDirective } from './directives/timer.directive';
 // Pipes
 import { TimePipe } from './pipes/time.pipe';
+// External Modules
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
+
 
 
 @NgModule({
@@ -46,6 +50,7 @@ import { TimePipe } from './pipes/time.pipe';
     TimerDirective,
     TimePipe,
     HamburgerButtonComponent,
+    MultiSliderComponent,
   ],
   imports: [
     BrowserModule,
@@ -54,6 +59,7 @@ import { TimePipe } from './pipes/time.pipe';
     FormsModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
+    NgxSliderModule,
   ],
   providers: [
     UtilitiesService,
